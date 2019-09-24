@@ -183,6 +183,8 @@ var player = {
 			if (Math.round(player.xVelocity > 0)) {
 				player.x = player.x + 1;
 				if (player.collisionCheck() === true) {
+
+					//Test for walking up slope
 					player.slope = 0;
 
 					while (player.slope < player.slopeMax && player.collisionCheck() === true) {
@@ -212,6 +214,8 @@ var player = {
 			if (Math.round(player.xVelocity < 0)) {
 				player.x = player.x - 1;
 				if (player.collisionCheck() === true) {
+
+					//Test for walking up slope
 					player.slope = 0;
 
 					while (player.slope < player.slopeMax && player.collisionCheck() === true) {
