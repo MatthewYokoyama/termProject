@@ -18,15 +18,6 @@ for (var i = 0; i < 1; ++i) {
 	abilitySounds.push(sfx);
 }
 
-var enemySounds = [];
-
-for (var i = 0; i < 1; ++i) {
-	var sfx = new Audio();
-	sfx.src = 'resources/assets/sounds/enemy/' + i + '.ogg';
-
-	enemySounds.push(sfx);
-}
-
 var playerResources = [];
 
 for (var i = 0; i < 2; ++i) {
@@ -56,11 +47,38 @@ for (var i = 0; i < 4; ++i) {
 
 var sceneryResources = [];
 
-for (var i = 0; i < 1; ++i) {
+for (var i = 0; i < 2; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/environment/' + i + '.png';
 
 	sceneryResources.push(img);
+}
+
+var enemy0Resources = [];
+
+for (var i = 0; i < 2; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/enemy/enemy0/' + i + '.png';
+
+	enemy0Resources.push(img);
+}
+
+var enemy0Sounds = [];
+
+for (var i = 0; i < 2; ++i) {
+	var sfx = new Audio();
+	sfx.src = 'resources/assets/sounds/enemy/enemy0/' + i + '.ogg';
+
+	enemy0Sounds.push(sfx);
+}
+
+var enemy1Resources = [];
+
+for (var i = 0; i < 2; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/enemy/enemy1/' + i + '.png';
+
+	enemy1Resources.push(img);
 }
 
 	///////////////////////////////
@@ -318,7 +336,7 @@ var player = {
 			cursorParameters.click = true;
 		} else if (cursorParameters.mouseDown === true && cursorParameters.click === true) {
 			cursorParameters.click = false;
-			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40, true, false, player.width / 2, player.height / 2, 25, 0));
+			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40, true, false, player.width / 2, player.height / 3, 25, 0));
 
 			const newAudio = abilitySounds[0].cloneNode();
 			newAudio.play();
@@ -333,6 +351,9 @@ var player = {
 	takeDamage: function() {
 		for (var i = 0; i < player.damageToPlayer.length; i = i + 1) {
 			player.health = player.health + player.damageToPlayer[i];
+		}
+		if (player.damageToPlayer.length > 0) {
+			player.xVelocity = player.xVelocity + 60 * Math.random() - 30;
 		}
 		if (player.health < 0) {
 			player.health = 0;
@@ -455,14 +476,22 @@ var userInterface = {
 };
 
 
-  ///////////////////
- //////SCENERY//////
-///////////////////
+  //////////////////////////
+ //////SCENERY LAYERS//////
+//////////////////////////
 
 var scenery0 = {
 	render: function() {
 		ctx.beginPath();
 		ctx.drawImage(sceneryResources[0], 0, 0, canvas.width, canvas.height);
+		ctx.closePath();
+	}
+}
+
+var scenery1 = {
+	render: function() {
+		ctx.beginPath();
+		ctx.drawImage(sceneryResources[1], 0, 0, canvas.width, canvas.height);
 		ctx.closePath();
 	}
 }
@@ -506,7 +535,7 @@ canvas.addEventListener('mousemove', function(e) {
 	cursorParameters.x = cursorPosition.x;
 	cursorParameters.y = cursorPosition.y;
 
-	cursorParameters.angle = Math.atan2((renderParameters.windowHeight + (player.height / 2 * renderParameters.yScale) + renderParameters.yOffset) - (cursorParameters.y * 2), (renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset) - (cursorParameters.x * 2));
+	cursorParameters.angle = Math.atan2((renderParameters.windowHeight + (player.height / 3 * renderParameters.yScale) + renderParameters.yOffset) - (cursorParameters.y * 2), (renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset) - (cursorParameters.x * 2));
 }, false);
 
 function getCursorPosition(canvas, e) {
@@ -666,7 +695,7 @@ function Enemy0(x, y, width, height) {
 	this.height = height;
   this.xVelocity = 0;
   this.yVelocity = 0;
-	this.xVelocityMax = 7;
+	this.xVelocityMax = 10;
 	this.xAcceleration = 1 + Math.random();
 	this.slope = 0;
 	this.slopeMax = 3;
@@ -680,11 +709,12 @@ function Enemy0(x, y, width, height) {
 	this.attackDistance = 20;
 	this.attacking = false;
 	this.attackTicker = 0;
-	this.attackTime = 10;
+	this.attackTime = 8;
 	this.attacked = false;
-	this.attackDamage = 5;
+	this.attackDamage = 1;
 	this.armor = 0.01;
 	this.criticalStrikeChance = 0;
+	this.direction = 0;
 	this.delete = false;
 	this.enemyID = 0;
 
@@ -708,6 +738,14 @@ function Enemy0(x, y, width, height) {
 			} else if (this.jump === true) {
 				this.xVelocity = this.xVelocity / 1.1;
 			}
+		}
+
+		if (this.xVelocity > 0) {
+			//set texture direction
+			this.direction = 0;
+		} else if (this.xVelocity < 0) {
+			//set texture direction
+			this.direction = 1;
 		}
 
 		for (var i = 0; i < Math.round(Math.abs(this.xVelocity)); i = i + 1) {
@@ -842,7 +880,7 @@ function Enemy0(x, y, width, height) {
 	}
 
   this.attack = function() {
-		if ((this.x + this.width / 2) > (player.x + player.width / 2) - this.attackDistance - 50 && (this.x + this.width / 2) < (player.x + player.width / 2) + this.attackDistance + 50 && (this.y + this.height / 2) > (player.y + player.height / 2) - this.attackDistance - 50 && (this.y + this.height / 2) < (player.y + player.height / 2) + this.attackDistance + 50) {
+		if ((this.x + this.width / 2) > (player.x + player.width / 2) - this.attackDistance - 50 && (this.x + this.width / 2) < (player.x + player.width / 2) + this.attackDistance + 50 && (this.y + this.height / 2) > (player.y + player.height / 3) - this.attackDistance - 50 && (this.y + this.height / 2) < (player.y + player.height / 3) + this.attackDistance + 50) {
 			this.attacking = true;
 			this.xVelocity = this.xVelocity / 2;
 
@@ -885,6 +923,15 @@ function Enemy0(x, y, width, height) {
 						player.damageToPlayer.push(-this.attackDamage);
 					}
 
+					//Play sound effect
+					if (Math.random() > 0.5) {
+						const newAudio = enemy0Sounds[0].cloneNode();
+						newAudio.play();
+					} else {
+						const newAudio = enemy0Sounds[1].cloneNode();
+						newAudio.play();
+					}
+
 					this.attacked = true;
 				}
 
@@ -912,7 +959,7 @@ function Enemy0(x, y, width, height) {
 
 			}
 
-			if ((this.x + this.width / 2) < (player.x + player.width / 2) - this.followDistance || (this.x + this.width / 2) > (player.x + player.width / 2) + this.followDistance || (this.y + this.height / 2) < (player.y + player.height / 2) - this.followDistance || (this.y + this.height / 2) > (player.y + player.height / 2) + this.followDistance) {
+			if ((this.x + this.width / 2) < (player.x + player.width / 2) - this.followDistance || (this.x + this.width / 2) > (player.x + player.width / 2) + this.followDistance || (this.y + this.height / 2) < (player.y + player.height / 3) - this.followDistance || (this.y + this.height / 2) > (player.y + player.height / 3) + this.followDistance) {
 				this.attacked = false;
 				this.attacking = false;
 			}
@@ -931,17 +978,18 @@ function Enemy0(x, y, width, height) {
 	}
 
   this.render = function() {
-			ctx.beginPath();
+		ctx.beginPath();
 
-			if (this.attacking === true) {
-				ctx.fillStyle = '#00FF00';
-			} else {
-				ctx.fillStyle = '#FF0000';
-			}
-	    ctx.fillRect((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+		//Draw using enemy textures
 
+		if (this.direction == 0) {
+			ctx.drawImage(enemy0Resources[0],(this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+		}
+		if (this.direction == 1) {
+			ctx.drawImage(enemy0Resources[1],(this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+		}
 
-	    ctx.closePath();
+	  ctx.closePath();
   }
 }
 
@@ -959,6 +1007,7 @@ function Enemy1(x, y, width, height) {
 	this.yTarget = 0;
 	this.followDistance = 200 * Math.random() + 180;
 	this.trackingRange = 2000;
+	this.direction = 0;
 	this.delete = false;
 	this.enemyID = 0;
 
@@ -968,13 +1017,13 @@ function Enemy1(x, y, width, height) {
 	}
 
 	this.move = function() {
-		this.angle = this.angle + 0.005;
+		this.angle = this.angle + 0.0045;
 
 		this.xTarget = player.x + 1000 * Math.cos(Math.PI * Math.sin(this.angle));
 		this.yTarget = player.y + 1000 * Math.sin(Math.PI * Math.sin(this.angle));
 
 
-		this.x = this.x + (this.xTarget - this.x) * 0.01;
+		this.x = this.x + (this.xTarget - this.x) * 0.015;
 		this.y = this.y + (this.yTarget - this.y) * 0.05;
 	}
 
@@ -997,10 +1046,14 @@ function Enemy1(x, y, width, height) {
 	}
 
   this.render = function() {
-			ctx.beginPath();
-	    ctx.fillStyle = '#FFFF00';
+		ctx.beginPath();
 
-	    ctx.fillRect((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+		if (this.x + this.width / 2 < player.x + player.width / 2) {
+			ctx.drawImage(enemy1Resources[0], (this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+		}
+		if (this.x + this.width / 2 > player.x + player.width / 2) {
+			ctx.drawImage(enemy1Resources[1], (this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+		}
 
 	    ctx.closePath();
   }
@@ -1024,6 +1077,12 @@ function initializeObjects() {
 	enemies.push(new Enemy0(120, 1520, 80, 120));
 	enemies.push(new Enemy0(120, 1520, 80, 120));
 
+	enemies.push(new Enemy1(120, 1560, 80, 80));
+	enemies.push(new Enemy1(120, 1560, 80, 80));
+	enemies.push(new Enemy1(120, 1560, 80, 80));
+	enemies.push(new Enemy1(120, 1560, 80, 80));
+	enemies.push(new Enemy1(120, 1560, 80, 80));
+	enemies.push(new Enemy1(120, 1560, 80, 80));
 	enemies.push(new Enemy1(120, 1560, 80, 80));
 	enemies.push(new Enemy1(120, 1560, 80, 80));
 	enemies.push(new Enemy1(120, 1560, 80, 80));
@@ -1079,7 +1138,7 @@ function render() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	scenery0.render();
 	map.render();
-	renderLine(renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset, renderParameters.windowHeight + (player.height / 2 * renderParameters.yScale) + renderParameters.yOffset, cursorParameters.x * 2, cursorParameters.y * 2);
+	renderLine(renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset, renderParameters.windowHeight + (player.height / 3 * renderParameters.yScale) + renderParameters.yOffset, cursorParameters.x * 2, cursorParameters.y * 2);
 	player.render();
 
 	//Render Bullets
@@ -1092,6 +1151,11 @@ function render() {
 	enemies.forEach(i => {
 		i.render();
 	});
+
+
+	//Viginette
+	scenery1.render();
+
 	userInterface.render();
 }
 
