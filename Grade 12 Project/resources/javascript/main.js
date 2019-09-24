@@ -325,7 +325,7 @@ var player = {
 		}
 	},
 	ability1: function() {
-
+		//ability1
 	},
 	ability2: function() {
 
