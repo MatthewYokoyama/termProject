@@ -1,0 +1,21 @@
+html {
+	margin: 0px;
+
+	background-color: #202020;
+
+	width: 1920px;
+	height: 1080px;
+}
+body {
+	margin: 0px;
+
+	width: 1920px;
+	height: 1080px;
+	
+	overflow: hidden;
+}
+#view {
+	border: 0px;
+	vertical-align: top;
+	display: block;
+}
