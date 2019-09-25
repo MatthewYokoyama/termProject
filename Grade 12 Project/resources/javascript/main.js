@@ -81,6 +81,15 @@ for (var i = 0; i < 2; ++i) {
 	enemy1Resources.push(img);
 }
 
+var enemy1ProjectileResources = [];
+
+for (var i = 0; i < 1; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/enemy/enemy1/projectile/' + i + '.png';
+
+	enemy1ProjectileResources.push(img);
+}
+
 	///////////////////////////////
  ///////GLOBAL PARAMETERS///////
 ///////////////////////////////
@@ -336,7 +345,7 @@ var player = {
 			cursorParameters.click = true;
 		} else if (cursorParameters.mouseDown === true && cursorParameters.click === true) {
 			cursorParameters.click = false;
-			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40, true, false, player.width / 2, player.height / 3, 25, 0));
+			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 30, true, false, player.width / 2, player.height / 3, 20, 0));
 
 			const newAudio = abilitySounds[0].cloneNode();
 			newAudio.play();
@@ -353,7 +362,7 @@ var player = {
 			player.health = player.health + player.damageToPlayer[i];
 		}
 		if (player.damageToPlayer.length > 0) {
-			player.xVelocity = player.xVelocity + 60 * Math.random() - 30;
+			player.xVelocity = player.xVelocity + 10 * Math.random() - 5;
 		}
 		if (player.health < 0) {
 			player.health = 0;
@@ -677,32 +686,30 @@ function Bullet(x, y, angle, initialVelocity, gravity, enemy, xOffset, yOffset, 
 		if (this.gravity === true) {
 			this.yVelocity = this.yVelocity + physicsParameters.gravity / 16;
 		}
+		this.attackPlayer();
+	},
+	this.attackPlayer = function() {
+		if (this.x >= player.x && this.x <= player.x + player.width && this.y >= player.y && this.y <= player.y + player.height) {
+			if (this.enemy === true) {
+				player.damageToPlayer.push(-1);
+				this.delete = true;
+			}
+		}
 	},
 	this.render = function() {
 
+		ctx.beginPath();
+
 		if (this.type == 0) {
-			ctx.beginPath();
 			ctx.drawImage(abilityResources[0], (this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
-			ctx.closePath();
 		}
 
 		if (this.type == 1) {
-			ctx.beginPath();
-			ctx.moveTo((this.x - 3 * this.xVelocity - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - 3 * this.yVelocity - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset);
-			ctx.lineTo((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset);
-			ctx.lineWidth = 20 * renderParameters.xScale;
-			ctx.lineCap = 'round';
-			ctx.strokeStyle = '#FFFFFF';
-			ctx.stroke();
-			ctx.closePath();
-
-			ctx.beginPath();
-	    ctx.fillStyle = '#54009e';
-			ctx.lineWidth = 5;
-	    ctx.arc((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.radius * renderParameters.xScale, 0, 2 * Math.PI);
-	    ctx.fill();
-	    ctx.closePath();
+			ctx.drawImage(enemy1ProjectileResources[0], (this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 		}
+
+		ctx.closePath();
+
 	}
 }
 
@@ -723,8 +730,7 @@ function Enemy0(x, y, width, height) {
 	this.slopeMax = 3;
 	this.jump = false;
 	this.jumpHeight = 15;
-	this.angle = 10 * Math.random();
-	this.followDistance = 700;
+	this.followDistance = 500;
 	this.trackingRange = 2000;
 	this.collision = false;
 	this.health = 100;
@@ -912,7 +918,7 @@ function Enemy0(x, y, width, height) {
 				//Jump Away from player
 				if (this.jump === false) {
 					this.jump = true;
-					this.yVelocity = -this.jumpHeight
+					this.yVelocity = -this.jumpHeight* 0.7;
 
 				}
 			}
@@ -958,7 +964,7 @@ function Enemy0(x, y, width, height) {
 				}
 
 				if ((this.x + this.width / 2) >= (player.x + player.width / 2)) {
-					if (this.xVelocity < this.xVelocityMax * 1.2) {
+					if (this.xVelocity < this.xVelocityMax) {
 						this.xVelocity = this.xVelocity + this.xAcceleration;
 
 						this.x = this.x + 1;
@@ -968,7 +974,7 @@ function Enemy0(x, y, width, height) {
 						this.x = this.x - 1;
 					}
 				} else if ((this.x + this.width / 2) < (player.x + player.width / 2)) {
-					if (this.xVelocity > -this.xVelocityMax * 1.2) {
+					if (this.xVelocity > -this.xVelocityMax) {
 						this.xVelocity = this.xVelocity - this.xAcceleration;
 
 						this.x = this.x - 1;
@@ -1020,29 +1026,32 @@ function Enemy1(x, y, width, height) {
   this.y = y;
 	this.width = width;
 	this.height = height;
-  this.xVelocity = 0;
-  this.yVelocity = 0;
-	this.xVelocityMax = 6;
 	this.xAcceleration = 1 + Math.random();
 	this.angle = 10 * Math.random();
 	this.xTarget = 0;
 	this.yTarget = 0;
-	this.followDistance = 200 * Math.random() + 180;
-	this.trackingRange = 2000;
+	this.health = 40;
+	this.armor = 0;
 	this.direction = 0;
+	this.coolDownTicker = 0;
+	this.coolDown = 400;
+	this.attackDistance = 1000;
+	this.xTracker = 0;
+	this.yTracker = 0;
+	this.targetLocked = false;
 	this.delete = false;
 	this.enemyID = 0;
 
 	this.loop = function() {
-			this.move();
-		//this.attack();
+		this.move();
+		this.attack();
 	}
 
 	this.move = function() {
 		this.angle = this.angle + 0.0045;
 
-		this.xTarget = player.x + 1000 * Math.cos(Math.PI * Math.sin(this.angle));
-		this.yTarget = player.y + 1000 * Math.sin(Math.PI * Math.sin(this.angle));
+		this.xTarget = player.x + this.attackDistance * Math.cos(Math.PI * Math.sin(this.angle));
+		this.yTarget = player.y + this.attackDistance * Math.sin(Math.PI * Math.sin(this.angle));
 
 
 		this.x = this.x + (this.xTarget - this.x) * 0.015;
@@ -1058,13 +1067,47 @@ function Enemy1(x, y, width, height) {
 
   this.attack = function() {
 
+		//Test for line of sight
+		this.targetLocked = true;
+
+		this.xTracker = this.x;
+		this.yTracker = this.y;
+
+		for (var i = 0; i < Math.abs(Math.hypot((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))); i = i + 1) {
+
+			if (map.tileMap[(this.xTracker - this.xTracker % map.tileWidth) / map.tileWidth + map.tileMapWidth * (this.yTracker - this.yTracker % map.tileHeight) / map.tileHeight] > 0) {
+				this.targetLocked = false;
+			}
+
+			this.xTracker = this.xTracker - Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)));
+			this.yTracker = this.yTracker - Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)));
+		}
+
+		//Attack if cool down is 0 and has line of sight
+		if (this.coolDownTicker <= 0) {
+			if (Math.abs((this.x + this.width / 2) - (player.x + player.width / 2)) > this.attackDistance / 2 && this.targetLocked === true) {
+				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10, false, true, this.width / 2, this.height / 2, 20, 1));
+
+				this.coolDownTicker = this.coolDown;
+			}
+		} else {
+			this.coolDownTicker = this.coolDownTicker - 1;
+		}
   }
 
 	this.takeDamage = function() {
-		this.xVelocity = this.xVelocity + 20 * (Math.cos(Math.atan2(this.y - player.y, this.x - player.x)));
-		this.yVelocity = this.yVelocity + 20 * (Math.sin(Math.atan2(this.y - player.y, this.x - player.x)));
+		this.x = this.x + 60 * (Math.cos(Math.atan2(this.y - player.y, this.x - player.x)));
+		this.y = this.y + 60 * (Math.sin(Math.atan2(this.y - player.y, this.x - player.x)));
 
-		this.delete = true;
+		this.health = this.health - (player.attackDamage * (1 - this.armor));
+
+		//Stuns attack
+		this.coolDownTicker = this.coolDown;
+
+
+		if (this.health <= 0) {
+			this.delete = true;
+		}
 	}
 
   this.render = function() {
@@ -1109,11 +1152,6 @@ function initializeObjects() {
 	enemies.push(new Enemy0(120, 1520, 80, 120));
 	enemies.push(new Enemy0(120, 1520, 80, 120));
 
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
 	enemies.push(new Enemy1(120, 1560, 80, 80));
 	enemies.push(new Enemy1(120, 1560, 80, 80));
 	enemies.push(new Enemy1(120, 1560, 80, 80));
