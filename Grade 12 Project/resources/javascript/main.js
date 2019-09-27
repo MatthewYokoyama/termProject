@@ -20,7 +20,7 @@ for (var i = 0; i < 1; ++i) {
 
 var playerResources = [];
 
-for (var i = 0; i < 2; ++i) {
+for (var i = 0; i < 6; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/player/playerSprites/' + i + '.png';
 
@@ -38,7 +38,7 @@ for (var i = 0; i < 1; ++i) {
 
 var userInterfaceResources = [];
 
-for (var i = 0; i < 4; ++i) {
+for (var i = 0; i < 5; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/userinterface/' + i + '.png';
 
@@ -115,7 +115,9 @@ var cursorParameters = {
 	x: 0,
 	y: 0,
 	angle: 0,
-	mouseDown: false,
+	mouseDown1: false,
+	mouseDown2: false,
+	mouseDown3: false,
 	click: true
 };
 
@@ -133,19 +135,20 @@ var player = {
 	xVelocity: 0,
 	yVelocity: 0,
 	xAcceleration: 0.7,
-	xVelocityMax: 10,
+	xVelocityMax: 12,
 	slope: 0,
 	slopeMax: 3,
 	jump: false,
 	jumpWall: false,
 	jumpHeight: 15,
+	jumpTapRight: false,
+	jumpTapLeft: false,
 	collision: false,
 	health: 100,
 	attackDamage: 10,
 	damageToPlayer: [],
 	direction: 0,
-	coolDown: [2, 10, 20],
-	coolDownData: [2, 10, 20],
+	state: 0,
 
 	//player functions
 	move: function() {
@@ -153,18 +156,22 @@ var player = {
 		keystrokelistener.logKeystrokes();
 
 		//yVelocity calculations
-		if (keystrokelistener.w === true || keystrokelistener.s === true) {
-			if (keystrokelistener.w === true && keystrokelistener.s === false && player.jump === false) {
+		if (keystrokelistener.w === true || keystrokelistener.space === true) {
+			if (player.jump === false) {
 				player.yVelocity = -player.jumpHeight;
 				player.jump = true;
-			}
-			if (keystrokelistener.w === false && keystrokelistener.s === true && player.jump === false) {
-				//player.yVelocity = 1;
-				//player.jump = true;
 			}
 		}
 
 		//xVelocity calculations
+		if (keystrokelistener.d === false || player.yVelocity > -player.jumpHeight / 5) {
+			player.jumpTapRight = false;
+		}
+		if (keystrokelistener.a === false || player.yVelocity > -player.jumpHeight / 5) {
+			player.jumpTapLeft = false;
+		}
+
+
 		if (keystrokelistener.d === true || keystrokelistener.a === true) {
 			if (keystrokelistener.d === true && keystrokelistener.a === false) {
 
@@ -173,8 +180,8 @@ var player = {
 						player.xVelocity = player.xVelocity / 1.5;
 					}
 					player.xVelocity = player.xVelocity + player.xAcceleration;
-				} else if (player.jump === true) {
-					player.xVelocity = player.xVelocity + player.xAcceleration / 3;
+				} else if (player.jump === true && player.jumpTapRight === false) {
+					player.xVelocity = player.xVelocity + player.xAcceleration / 2;
 				}
 				if (player.xVelocity > player.xVelocityMax) {
 					player.xVelocity = player.xVelocityMax;
@@ -187,8 +194,8 @@ var player = {
 						player.xVelocity = player.xVelocity / 1.5;
 					}
 					player.xVelocity = player.xVelocity - player.xAcceleration;
-				} else if (player.jump === true) {
-					player.xVelocity = player.xVelocity - player.xAcceleration / 3;
+				} else if (player.jump === true && player.jumpTapLeft === false) {
+					player.xVelocity = player.xVelocity - player.xAcceleration / 2;
 				}
 				if (player.xVelocity < -player.xVelocityMax) {
 					player.xVelocity = -player.xVelocityMax;
@@ -209,6 +216,8 @@ var player = {
 		for (var i = 0; i < Math.round(Math.abs(player.xVelocity)); i = i + 1) {
 			if (Math.round(player.xVelocity > 0)) {
 				player.x = player.x + 1;
+				player.direction = 0;
+
 				if (player.collisionCheck() === true) {
 
 					//Test for walking up slope
@@ -223,23 +232,36 @@ var player = {
 						player.x = player.x - 1;
 						player.xVelocity = 0;
 
-						if (player.jump === true && keystrokelistener.w === false) {
-							player.jumpWall = true;
-						}
-						if (player.jumpWall === true && keystrokelistener.w === true) {
-							player.x = player.x - 1;
-							player.jumpWall = false;
-							if (player.collisionCheck() == false) {
-								player.xVelocity = -player.xVelocityMax * 1.5;
-								player.yVelocity = -player.jumpHeight;
+						if (player.jump === true) {
+							if (keystrokelistener.w === false && keystrokelistener.space === false) {
+								player.jumpWall = true;
 							}
-							player.x = player.x + 1;
+						}
+						if (player.jumpWall === true) {
+							//Wall sliding
+							if (keystrokelistener.d === true && player.yVelocity > 0) {
+								player.yVelocity = 2;
+							}
+
+							if (keystrokelistener.w === true || keystrokelistener.space === true) {
+								player.x = player.x - 1;
+								player.jumpWall = false;
+								player.jumpTapRight = true;
+
+								if (player.collisionCheck() == false) {
+									player.xVelocity = -player.xVelocityMax;
+									player.yVelocity = -player.jumpHeight;
+								}
+								player.x = player.x + 1;
+							}
 						}
 					}
 				}
 			}
 			if (Math.round(player.xVelocity < 0)) {
 				player.x = player.x - 1;
+				player.direction = 1;
+
 				if (player.collisionCheck() === true) {
 
 					//Test for walking up slope
@@ -254,22 +276,34 @@ var player = {
 						player.x = player.x + 1;
 						player.xVelocity = 0;
 
-						if (player.jump === true && keystrokelistener.w === false) {
-							player.jumpWall = true;
-						}
-						if (player.jumpWall === true && keystrokelistener.w === true) {
-							player.x = player.x + 1;
-							player.jumpWall = false;
-							if (player.collisionCheck() == false) {
-								player.xVelocity = player.xVelocityMax * 1.5;
-								player.yVelocity = -player.jumpHeight;
+						if (player.jump === true) {
+							if (keystrokelistener.w === false && keystrokelistener.space === false) {
+								player.jumpWall = true;
 							}
-							player.x = player.x - 1;
+						}
+						if (player.jumpWall === true) {
+							//Wall sliding
+							if (keystrokelistener.a === true && player.yVelocity > 0) {
+								player.yVelocity = 2;
+							}
+
+							if (keystrokelistener.w === true || keystrokelistener.space === true) {
+								player.x = player.x + 1;
+								player.jumpWall = false;
+								player.jumpTapLeft = true;
+
+								if (player.collisionCheck() == false) {
+									player.xVelocity = player.xVelocityMax;
+									player.yVelocity = -player.jumpHeight;
+								}
+								player.x = player.x - 1;
+							}
 						}
 					}
 				}
 			}
 		}
+
 
 		//Test for jump
 		if (player.jump === false) {
@@ -281,6 +315,9 @@ var player = {
 			} else {
 				player.jump = true;
 			}
+
+			player.jumpTapRight = false;
+			player.jumpTapLeft = false;
 		}
 
 		//Handle jump
@@ -340,20 +377,62 @@ var player = {
 		}
 		return player.collision;
 	},
-	ability0: function() {
-		if (cursorParameters.mouseDown === false) {
-			cursorParameters.click = true;
-		} else if (cursorParameters.mouseDown === true && cursorParameters.click === true) {
-			cursorParameters.click = false;
-			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 30, true, false, player.width / 2, player.height / 3, 20, 0));
 
+	//Ability cool down Data
+	coolDown0Ticker: 0,
+	coolDown0: 25,
+	ability0KeyTap: false,
+
+	ability0: function() {
+		//Decrease cooldown timer
+		if (player.coolDown0Ticker > 0) {
+			player.coolDown0Ticker = player.coolDown0Ticker - 1;
+		}
+
+		if (cursorParameters.mouseDown3 === false) {
+			player.ability0KeyTap = true;
+		} else if (cursorParameters.mouseDown3 === true && player.coolDown0Ticker <= 0) {
+			player.ability0KeyTap = false;
+			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 45 * -Math.cos(cursorParameters.angle) + player.xVelocity, 45 * -Math.sin(cursorParameters.angle) + player.yVelocity, true, false, player.width / 2, player.height / 3, 20, 0));
+
+			//Sound effect
 			const newAudio = abilitySounds[0].cloneNode();
 			newAudio.play();
+
+			player.coolDown0Ticker = player.coolDown0;
 		}
 	},
+
+	//Ability cool down Data
+	coolDown1Ticker: 0,
+	coolDown1: 10,
+	ability1KeyTap: false,
+
 	ability1: function() {
-		//ability1
+		//Decrease cooldown timer
+		if (player.coolDown1Ticker > 0) {
+			player.coolDown1Ticker = player.coolDown1Ticker - 1;
+		}
+
+		if (cursorParameters.mouseDown1 === false) {
+			player.ability1KeyTap = true;
+		} else if (cursorParameters.mouseDown1 === true && player.ability1KeyTap === true && player.coolDown1Ticker <= 0) {
+			player.ability1KeyTap = false;
+			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 45 * -Math.cos(cursorParameters.angle) + player.xVelocity, 45 * -Math.sin(cursorParameters.angle) + player.yVelocity, true, false, player.width / 2, player.height / 3, 20, 0));
+
+			//Sound effect
+			const newAudio = abilitySounds[0].cloneNode();
+			newAudio.play();
+
+			player.coolDown1Ticker = player.coolDown1;
+		}
 	},
+
+	//Ability cool down Data
+	coolDown2Ticker: 0,
+	coolDown2: 100,
+	ability2KeyTap: false,
+
 	ability2: function() {
 
 	},
@@ -369,14 +448,60 @@ var player = {
 		}
 		player.damageToPlayer = [];
 	},
+	animate: function() {
+		if (player.direction === 0) {
+			if (player.jump === false) {
+				player.state = 0;
+			}
+			if (player.jump === true) {
+				if (player.jumpWall === true && player.yVelocity > 1) {
+					player.state = 2;
+				}
+				if (player.jumpWall === false) {
+					player.state = 0;
+					if (player.yVelocity > 16) {
+						player.state = 4;
+					}
+				}
+			}
+		}
+		if (player.direction === 1) {
+			if (player.jump === false) {
+				player.state = 1;
+			}
+			if (player.jump === true) {
+				if (player.jumpWall === true && player.yVelocity > 1) {
+					player.state = 3;
+				}
+				if (player.jumpWall === false) {
+					player.state = 1;
+					if (player.yVelocity > 16) {
+						player.state = 5;
+					}
+				}
+			}
+		}
+	},
 	render: function() {
 		ctx.beginPath();
 
-		if (player.direction == 0) {
+		if (player.state == 0) {
 			ctx.drawImage(playerResources[0], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 		}
-		if (player.direction == 1) {
+		if (player.state == 1) {
 			ctx.drawImage(playerResources[1], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		}
+		if (player.state == 2) {
+			ctx.drawImage(playerResources[2], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		}
+		if (player.state == 3) {
+			ctx.drawImage(playerResources[3], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		}
+		if (player.state == 4) {
+			ctx.drawImage(playerResources[4], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		}
+		if (player.state == 5) {
+			ctx.drawImage(playerResources[5], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 		}
 
 		ctx.closePath();
@@ -425,7 +550,7 @@ var map = {
 	render: function() {
 		for (var i = 0; i <= map.tileMap.length; i = i + 1) {
 			ctx.beginPath();
-      ctx.fillStyle = '#FFFFFF';
+      ctx.fillStyle = '#47048a';
 
 			if (map.tileMap[i] != 0) {
 				if (map.tileMap[i] == 1) {
@@ -475,33 +600,48 @@ var userInterface = {
 	boxWidth: 160,
 	boxHeight: 160,
 	boxSpacing: 40,
+	abilityBorderWidth: 20,
 	healthWidth: 960,
 	apparentHealthWidth: 960,
 	healthHeight: 80,
-	borderWidth: 6,
+	healthBorderWidth: 20,
 
 	render: function() {
+
+		//Draw ability icons
+
 		ctx.beginPath();
+
+		ctx.drawImage(userInterfaceResources[4], cursorParameters.x * 2 - 40, cursorParameters.y * 2 - 40, 80, 80);
+
 		for (var i = 0; i < 3; ++i) {
 			ctx.drawImage(userInterfaceResources[i], (i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight - userInterface.boxSpacing, userInterface.boxWidth, userInterface.boxHeight);
 		}
+
+		//Draw ability cooldown indicator
+		ctx.fillStyle = '#FFFFFF';
+
+		ctx.fillRect(userInterface.boxSpacing + userInterface.abilityBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxSpacing - userInterface.abilityBorderWidth, userInterface.boxWidth - userInterface.abilityBorderWidth * 2, -(userInterface.boxHeight - userInterface.abilityBorderWidth * 2) * (player.coolDown0Ticker / player.coolDown0));
+
+		ctx.fillRect(2 * userInterface.boxSpacing + userInterface.boxWidth + userInterface.abilityBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxSpacing - userInterface.abilityBorderWidth, userInterface.boxWidth - userInterface.abilityBorderWidth * 2, -(userInterface.boxHeight - userInterface.abilityBorderWidth * 2) * (player.coolDown1Ticker / player.coolDown1));
 
 		//Draw Healthbar
 
 		ctx.fillStyle = '#000000';
 		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing, userInterface.healthWidth, userInterface.healthHeight);
 
-		if ((userInterface.apparentHealthWidth - userInterface.borderWidth * 2) > (userInterface.healthWidth - userInterface.borderWidth * 2) * (player.health / 100)) {
+		if ((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) > (userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100)) {
 			userInterface.apparentHealthWidth = userInterface.apparentHealthWidth - 0.5;
 		}
 
 		ctx.fillStyle = '#FFFF00';
-		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.borderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.borderWidth, (userInterface.apparentHealthWidth - userInterface.borderWidth * 2), userInterface.healthHeight - userInterface.borderWidth * 2);
+		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.healthBorderWidth, (userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2), userInterface.healthHeight - userInterface.healthBorderWidth * 2);
 
 		ctx.fillStyle = '#FF0000';
-		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.borderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.borderWidth, (userInterface.healthWidth - userInterface.borderWidth * 2) * (player.health / 100), userInterface.healthHeight - userInterface.borderWidth * 2);
+		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.healthBorderWidth, (userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100), userInterface.healthHeight - userInterface.healthBorderWidth * 2);
 
 		ctx.drawImage(userInterfaceResources[i], (i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing, userInterface.healthWidth, userInterface.healthHeight);
+
 		ctx.closePath();
 	}
 };
@@ -549,11 +689,28 @@ canvas.style.height = String(renderParameters.windowHeight + 'px');
 ////////////////////////
 
 canvas.addEventListener('mousedown', function() {
-	cursorParameters.mouseDown = true;
+	if (event.which === 1) {
+		cursorParameters.mouseDown1 = true;
+	}
+	if (event.which === 2) {
+		cursorParameters.mouseDown2 = true;
+	}
+	if (event.which === 3) {
+		cursorParameters.mouseDown3 = true;
+	}
 });
 
+
 canvas.addEventListener('mouseup', function() {
-	cursorParameters.mouseDown = false;
+	if (event.which === 1) {
+		cursorParameters.mouseDown1 = false;
+	}
+	if (event.which === 2) {
+		cursorParameters.mouseDown2 = false;
+	}
+	if (event.which === 3) {
+		cursorParameters.mouseDown3 = false;
+	}
 });
 
 canvas.addEventListener('contextmenu', function(e) {
@@ -587,6 +744,7 @@ var keystrokelistener = {
 	a: false,
 	s: false,
 	d: false,
+	space: false,
 	logKeystrokes: function() {
 		'use strict';
     document.onkeydown = function (keyDown) {
@@ -601,11 +759,12 @@ var keystrokelistener = {
       }
       if (String.fromCharCode(charCode) === 'D') {
         keystrokelistener.d = true;
-				player.direction = 0;
       }
       if (String.fromCharCode(charCode) === 'A') {
         keystrokelistener.a = true;
-				player.direction = 1;
+      }
+			if (charCode === 32) {
+        keystrokelistener.space = true;
       }
     };
     document.onkeyup = function (keyUp) {
@@ -624,6 +783,9 @@ var keystrokelistener = {
       if (String.fromCharCode(charCode) === 'A') {
         keystrokelistener.a = false;
       }
+			if (charCode === 32) {
+				keystrokelistener.space = false;
+			}
     };
 	}
 };
@@ -637,11 +799,11 @@ var keystrokelistener = {
 
 let bullets = [];
 
-function Bullet(x, y, angle, initialVelocity, gravity, enemy, xOffset, yOffset, radius, type) {
+function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy, xOffset, yOffset, radius, type) {
 	this.x = x + xOffset;
 	this.y = y + yOffset;
-	this.xVelocity = initialVelocity * -Math.cos(angle);
-	this.yVelocity = initialVelocity * -Math.sin(angle);
+	this.xVelocity = xVelocityInitial;
+	this.yVelocity = yVelocityInitial;
 	this.angle = angle;
 	this.gravity = gravity;
 	this.enemy = enemy;
@@ -1011,10 +1173,10 @@ function Enemy0(x, y, width, height) {
 		//Draw using enemy textures
 
 		if (this.direction == 0) {
-			ctx.drawImage(enemy0Resources[0],(this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[0], Math.round((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset), (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 		if (this.direction == 1) {
-			ctx.drawImage(enemy0Resources[1],(this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[1], Math.round((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset), (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 
 	  ctx.closePath();
@@ -1026,7 +1188,6 @@ function Enemy1(x, y, width, height) {
   this.y = y;
 	this.width = width;
 	this.height = height;
-	this.xAcceleration = 1 + Math.random();
 	this.angle = 10 * Math.random();
 	this.xTarget = 0;
 	this.yTarget = 0;
@@ -1036,6 +1197,8 @@ function Enemy1(x, y, width, height) {
 	this.coolDownTicker = 0;
 	this.coolDown = 400;
 	this.attackDistance = 1000;
+	this.startTracking = false;
+	this.trackingRange = 1000;
 	this.xTracker = 0;
 	this.yTracker = 0;
 	this.targetLocked = false;
@@ -1043,8 +1206,14 @@ function Enemy1(x, y, width, height) {
 	this.enemyID = 0;
 
 	this.loop = function() {
-		this.move();
-		this.attack();
+		if (this.x + this.width / 2 > player.x + player.width / 2 - this.trackingRange && this.x + this.width / 2 < player.x + player.width / 2 + this.trackingRange) {
+			this.startTracking = true;
+		}
+
+		if (this.startTracking === true) {
+			this.move();
+			this.attack();
+		}
 	}
 
 	this.move = function() {
@@ -1053,9 +1222,9 @@ function Enemy1(x, y, width, height) {
 		this.xTarget = player.x + this.attackDistance * Math.cos(Math.PI * Math.sin(this.angle));
 		this.yTarget = player.y + this.attackDistance * Math.sin(Math.PI * Math.sin(this.angle));
 
-
 		this.x = this.x + (this.xTarget - this.x) * 0.015;
 		this.y = this.y + (this.yTarget - this.y) * 0.05;
+
 	}
 
 	this.returnCollisionBox = function() {
@@ -1086,7 +1255,7 @@ function Enemy1(x, y, width, height) {
 		//Attack if cool down is 0 and has line of sight
 		if (this.coolDownTicker <= 0) {
 			if (Math.abs((this.x + this.width / 2) - (player.x + player.width / 2)) > this.attackDistance / 2 && this.targetLocked === true) {
-				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10, false, true, this.width / 2, this.height / 2, 20, 1));
+				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10 * -Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), 10 * -Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), false, true, this.width / 2, this.height / 2, 20, 1));
 
 				this.coolDownTicker = this.coolDown;
 			}
@@ -1134,9 +1303,14 @@ function initializeObjects() {
 	}
 	map.generateMap();
 
-	//Set game to run at 120Hz
-	window.setInterval(mainLoop, 1000 / renderParameters.gameSpeed);
+	//window.requestAnimationFrame(mainLoop);
+	window.requestAnimationFrame(gameTick);
 
+	//Set game to run at 120Hz
+	//window.setInterval(mainLoop, 1000 / renderParameters.gameSpeed);
+
+	window.requestAnimationFrame(render);
+	// window.setInterval(render, 1000 / renderParameters.gameSpeed);
 
 
 	enemies.push(new Enemy0(1960, 1880, 80, 120));
@@ -1161,6 +1335,29 @@ function initializeObjects() {
 	enemies.push(new Enemy1(120, 1560, 80, 80));
 }
 
+
+  /////////////////////
+ //////GAME TICK//////
+/////////////////////
+
+var loopTime = 0;
+
+function gameTick() {
+
+	while (loopTime < timestamp() / (1000 / renderParameters.gameSpeed)) {
+		mainLoop()
+		loopTime = loopTime + 1;
+		if (timestamp() / (1000 / renderParameters.gameSpeed) - loopTime > 500) {
+			loopTime = timestamp() / (1000 / renderParameters.gameSpeed);
+		}
+	}
+	window.requestAnimationFrame(gameTick);
+}
+
+function timestamp() {
+  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+}
+
 //Main process loop
 function mainLoop() {
 	enemyCollisionBoxes = [];
@@ -1171,8 +1368,14 @@ function mainLoop() {
 
 	//Player functions
 	player.move();
+
 	player.ability0();
+	player.ability1();
+	player.ability2();
+
 	player.takeDamage();
+
+	player.animate();
 
 	//Bullet handler
 	for (var i = 0; i < bullets.length; i = i + 1)  {
@@ -1193,11 +1396,9 @@ function mainLoop() {
     if (enemies[i].delete === true) {
       enemies.splice(i, 1);
     }
-  }
-
-
-	render();
+	}
 }
+
 
 //Draw objects on screen
 function render() {
@@ -1224,14 +1425,25 @@ function render() {
 	scenery1.render();
 
 	userInterface.render();
+
+	window.requestAnimationFrame(render);
 }
 
 function renderLine(x1, y1, x2, y2) {
 	ctx.beginPath;
+
+	ctx.lineCap = "round";
+
+	ctx.moveTo(x1, y1);
+	ctx.lineTo(x2, y2);
+	ctx.lineWidth = 12;
+	ctx.strokeStyle = '#081100';
+	ctx.stroke();
+
 	ctx.moveTo(x1, y1);
 	ctx.lineTo(x2, y2);
 	ctx.lineWidth = 5;
-	ctx.strokeStyle = '#00FF00';
+	ctx.strokeStyle = '#6fb032';
 	ctx.stroke();
 	ctx.closePath();
 }
