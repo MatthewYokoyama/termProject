@@ -56,11 +56,20 @@ for (var i = 0; i < 6; ++i) {
 
 var sceneryResources = [];
 
-for (var i = 0; i < 2; ++i) {
+for (var i = 0; i < 1; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/environment/' + i + '.png';
 
 	sceneryResources.push(img);
+}
+
+var backdropResources = [];
+
+for (var i = 0; i < 2; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/environment/backdrops/' + i + '.png';
+
+	backdropResources.push(img);
 }
 
 var enemy0Resources = [];
@@ -117,7 +126,8 @@ var renderParameters = {
 	xScale: 1,
 	yScale: 1,
 	//Game loop frequency in (Hz)
-	gameSpeed: 120
+	gameSpeed: 120,
+	pause: false,
 };
 
 var cursorParameters = {
@@ -384,8 +394,10 @@ var player = {
 						}
 					} else if (map.tileMap[tileCheck] == 6) {
 						if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
-							map.level = map.level + 1;
-							map.generateMap();
+
+							//Pauses the game for stage transition
+							renderParameters.pause = true;
+
 						}
 					}
 				}
@@ -657,52 +669,54 @@ var map = {
 	tileHeight: 40,
 	level: 0,
 	generateMap: function() {
-				map.tileMap = [];
-				enemies = [];
+		map.tileMap = [];
+		enemies = [];
 
-				var genc = document.getElementById('Canvas');
-				var genctx = genc.getContext('2d');
+		var genc = document.getElementById('Canvas');
+		var genctx = genc.getContext('2d');
 
-				genctx.clearRect(0, 0, genc.width, genc.height);
+		genctx.clearRect(0, 0, genc.width, genc.height);
 
-				var img = document.getElementById(map.level);
-				var imgHeight = document.getElementById(map.level).height;
+		var img = document.getElementById(map.level);
+		var imgHeight = document.getElementById(map.level).height;
 
-				genc.style.width = String(imgHeight + 'px');
+		genc.style.width = String(imgHeight + 'px');
 
-				console.log(map.level);
-				console.log(imgHeight);
+		console.log(map.level);
+		console.log(imgHeight);
 
 
-				genctx.drawImage(img, 0, 0);
-				var imgData = genctx.getImageData(0, 0, genc.width, genc.height);
+		genctx.drawImage(img, 0, 0);
+		var imgData = genctx.getImageData(0, 0, genc.width, genc.height);
 
-				for (var i = 0; i < imgData.data.length; i += 4) {
-						if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
-								map.tileMap.push(1);
-						} else if (imgData.data[i+3] > 0 && imgData.data[i] > 0 && imgData.data[i] <= 60 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
-								map.tileMap.push(2);
-						} else if (imgData.data[i+3] > 0 && imgData.data[i] > 60 && imgData.data[i] <= 120 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
-								map.tileMap.push(3);
-						} else if (imgData.data[i+3] > 0 && imgData.data[i] > 120 && imgData.data[i] <= 180 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
-								map.tileMap.push(4);
-						} else if (imgData.data[i+3] > 0 && imgData.data[i] > 180 && imgData.data[i] <= 240 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
-								map.tileMap.push(5);
-						} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 120 && imgData.data[i + 1] <= 180 && imgData.data[i + 2] == 0) {
-								map.tileMap.push(6);
-						} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 180 && imgData.data[i + 1] <= 240 && imgData.data[i + 2] == 0) {
-								map.tileMap.push(7);
-						} else {
-								map.tileMap.push(0);
-						}
+		for (var i = 0; i < imgData.data.length; i += 4) {
+				if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+						map.tileMap.push(1);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 0 && imgData.data[i] <= 60 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+						map.tileMap.push(2);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 60 && imgData.data[i] <= 120 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+						map.tileMap.push(3);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 120 && imgData.data[i] <= 180 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+						map.tileMap.push(4);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 180 && imgData.data[i] <= 240 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+						map.tileMap.push(5);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 120 && imgData.data[i + 1] <= 180 && imgData.data[i + 2] == 0) {
+						map.tileMap.push(6);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 180 && imgData.data[i + 1] <= 240 && imgData.data[i + 2] == 0) {
+						map.tileMap.push(7);
+				} else {
+						map.tileMap.push(0);
 				}
+		}
 
-				for (var i = 0; i < map.tileMap.length; i = i + 1) {
-					if (map.tileMap[i] == 7) {
-						player.x = i % map.tileMapWidth * map.tileWidth;
-						player.y = (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight;
-					}
-				}
+		for (var i = 0; i < map.tileMap.length; i = i + 1) {
+			if (map.tileMap[i] == 7) {
+				player.x = i % map.tileMapWidth * map.tileWidth;
+				player.y = (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight;
+			}
+		}
+
+		renderParameters.pause = false;
 
 	},
 	render: function() {
@@ -818,6 +832,45 @@ var userInterface = {
 };
 
 
+  ////////////////////////////
+ //////STAGE TRANSITION//////
+////////////////////////////
+
+var stageTransition = {
+	ticker: 0,
+	time: 70,
+	x: 0,
+	width: 0,
+
+
+	transition: function() {
+
+		stageTransition.ticker = stageTransition.ticker + 1;
+
+		stageTransition.x = 0;
+		stageTransition.width = 2 * canvas.width * (stageTransition.ticker / stageTransition.time)
+
+		if (stageTransition.time <= stageTransition.ticker) {
+			stageTransition.ticker = 0;
+			stageTransition.width = 0;
+
+			map.level = map.level + 1;
+			renderParameters.pause = false;
+
+			map.generateMap();
+		}
+	},
+
+	render: function() {
+		ctx.beginPath();
+		ctx.fillStyle = '#000000'
+		ctx.fillRect(stageTransition.x, 0, stageTransition.width, 2 * canvas.height);
+		ctx.closePath();
+	}
+
+}
+
+
   //////////////////////////
  //////SCENERY LAYERS//////
 //////////////////////////
@@ -825,7 +878,7 @@ var userInterface = {
 var scenery0 = {
 	render: function() {
 		ctx.beginPath();
-		ctx.drawImage(sceneryResources[0], 0, 0, canvas.width, canvas.height);
+		ctx.drawImage(backdropResources[map.level], 0, 0, canvas.width, canvas.height);
 		ctx.closePath();
 	}
 }
@@ -833,7 +886,7 @@ var scenery0 = {
 var scenery1 = {
 	render: function() {
 		ctx.beginPath();
-		ctx.drawImage(sceneryResources[1], 0, 0, canvas.width, canvas.height);
+		ctx.drawImage(sceneryResources[0], 0, 0, canvas.width, canvas.height);
 		ctx.closePath();
 	}
 }
@@ -1614,6 +1667,7 @@ function gameTick() {
 			loopTime = timestamp() / (1000 / renderParameters.gameSpeed);
 		}
 	}
+
 	window.requestAnimationFrame(gameTick);
 }
 
@@ -1624,63 +1678,65 @@ function timestamp() {
 //Main process loop
 function mainLoop() {
 
-	enemyCollisionBoxes = [];
+	if (renderParameters.pause === false) {
 
-	//Find enemy hitboxes
-	for (var i = 0; i < enemies.length; i = i + 1)  {
+		enemyCollisionBoxes = [];
 
-		enemies[i].returnCollisionBox()
+		//Find enemy hitboxes
+		for (var i = 0; i < enemies.length; i = i + 1)  {
 
-	}
+			enemies[i].returnCollisionBox()
+
+		}
 
 
+		////////////////////////////
+	 //////PLAYER FUNCTIONS//////
 	////////////////////////////
- //////PLAYER FUNCTIONS//////
-////////////////////////////
 
-	//Player functions
-	player.move();
+		//Player functions
+		player.move();
 
-	player.ability0();
-	player.ability1();
-	player.ability2();
+		player.ability0();
+		player.ability1();
+		player.ability2();
 
-	player.takeDamage();
+		player.takeDamage();
 
-	player.determineState();
-	player.animate();
+		player.determineState();
+		player.animate();
 
 
-	  /////////////////////////
-	 //////MOVE ENTITIES//////
-	/////////////////////////
+		  /////////////////////////
+		 //////MOVE ENTITIES//////
+		/////////////////////////
 
-	//enemyHandler
-	for (var i = 0; i < enemies.length; i = i + 1)  {
+		//enemyHandler
+		for (var i = 0; i < enemies.length; i = i + 1)  {
 
-		enemies[i].enemyID = i;
-		enemies[i].loop();
+			enemies[i].enemyID = i;
+			enemies[i].loop();
 
-	}
+		}
 
-	//Bullet handler
-	for (var i = 0; i < bullets.length; i = i + 1)  {
+		//Bullet handler
+		for (var i = 0; i < bullets.length; i = i + 1)  {
 
-    bullets[i].move();
+	    bullets[i].move();
 
-  }
+	  }
 
-	//Missile handler
-	for (var i = 0; i < missiles.length; i = i + 1)  {
+		//Missile handler
+		for (var i = 0; i < missiles.length; i = i + 1)  {
 
-		missiles[i].move();
+			missiles[i].move();
 
-	}
+		}
 
 
-	  ///////////////////////////
-	 //////DELETE ENTITIES//////
-	///////////////////////////
+		  ///////////////////////////
+		 //////DELETE ENTITIES//////
+		///////////////////////////
 
 		//Bullet handler
 		for (var i = 0; i < bullets.length; i = i + 1)  {
@@ -1706,6 +1762,12 @@ function mainLoop() {
 	      enemies.splice(i, 1);
 	    }
 		}
+
+	}
+
+	if (renderParameters.pause === true) {
+		stageTransition.transition();
+	}
 
 }
 
@@ -1742,6 +1804,8 @@ function render() {
 	scenery1.render();
 
 	userInterface.render();
+
+	stageTransition.render();
 
 	window.requestAnimationFrame(render);
 }
