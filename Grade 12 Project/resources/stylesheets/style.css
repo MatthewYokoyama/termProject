@@ -11,11 +11,17 @@ body {
 
 	width: 1920px;
 	height: 1080px;
-	
+
 	overflow: hidden;
 }
 #view {
 	border: 0px;
 	vertical-align: top;
 	display: block;
+}
+#Canvas {
+	display: none;
+}
+.mapData {
+	display: none;
 }

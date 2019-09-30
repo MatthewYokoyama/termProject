@@ -11,9 +11,18 @@ document.getElementById('view').style.cursor = 'none';
 
 var abilitySounds = [];
 
+//Ability0
 for (var i = 0; i < 1; ++i) {
 	var sfx = new Audio();
 	sfx.src = 'resources/assets/sounds/player/ability0/' + i + '.ogg';
+
+	abilitySounds.push(sfx);
+}
+
+//Ability1
+for (var i = 0; i < 1; ++i) {
+	var sfx = new Audio();
+	sfx.src = 'resources/assets/sounds/player/ability1/' + i + '.ogg';
 
 	abilitySounds.push(sfx);
 }
@@ -38,7 +47,7 @@ for (var i = 0; i < 1; ++i) {
 
 var userInterfaceResources = [];
 
-for (var i = 0; i < 5; ++i) {
+for (var i = 0; i < 6; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/userinterface/' + i + '.png';
 
@@ -104,7 +113,7 @@ var renderParameters = {
 	windowWidth: 1920,
 	windowHeight: 1080,
 	xOffset: 0,
-	yOffset: 0,
+	yOffset: -40,
 	xScale: 1,
 	yScale: 1,
 	//Game loop frequency in (Hz)
@@ -130,8 +139,8 @@ var player = {
 	//HEIGHT AND WIDTH VALUES MUST BE A MULTIPLE OF 40
 	height: 160,
 	width: 80,
-	x: 3500,
-	y: 300,
+	x: 0,
+	y: 0,
 	xVelocity: 0,
 	yVelocity: 0,
 	xAcceleration: 0.7,
@@ -179,12 +188,13 @@ var player = {
 					if (player.xVelocity < 0) {
 						player.xVelocity = player.xVelocity / 1.5;
 					}
-					player.xVelocity = player.xVelocity + player.xAcceleration;
+					if (player.xVelocity < player.xVelocityMax) {
+						player.xVelocity = player.xVelocity + player.xAcceleration;
+					}
 				} else if (player.jump === true && player.jumpTapRight === false) {
-					player.xVelocity = player.xVelocity + player.xAcceleration / 2;
-				}
-				if (player.xVelocity > player.xVelocityMax) {
-					player.xVelocity = player.xVelocityMax;
+					if (player.xVelocity < player.xVelocityMax) {
+						player.xVelocity = player.xVelocity + player.xAcceleration / 2;
+					}
 				}
 			}
 			if (keystrokelistener.d === false && keystrokelistener.a === true) {
@@ -193,12 +203,13 @@ var player = {
 					if (player.xVelocity > 0) {
 						player.xVelocity = player.xVelocity / 1.5;
 					}
-					player.xVelocity = player.xVelocity - player.xAcceleration;
+					if (player.xVelocity > -player.xVelocityMax) {
+						player.xVelocity = player.xVelocity - player.xAcceleration;
+					}
 				} else if (player.jump === true && player.jumpTapLeft === false) {
-					player.xVelocity = player.xVelocity - player.xAcceleration / 2;
-				}
-				if (player.xVelocity < -player.xVelocityMax) {
-					player.xVelocity = -player.xVelocityMax;
+					if (player.xVelocity > -player.xVelocityMax) {
+						player.xVelocity = player.xVelocity - player.xAcceleration / 2;
+					}
 				}
 			}
 		} else if (player.jump === false) {
@@ -371,6 +382,11 @@ var player = {
 						if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
 							player.collision = true;
 						}
+					} else if (map.tileMap[tileCheck] == 6) {
+						if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
+							map.level = map.level + 1;
+							map.generateMap();
+						}
 					}
 				}
 			}
@@ -389,9 +405,9 @@ var player = {
 			player.coolDown0Ticker = player.coolDown0Ticker - 1;
 		}
 
-		if (cursorParameters.mouseDown3 === false) {
+		if (cursorParameters.mouseDown1 === false) {
 			player.ability0KeyTap = true;
-		} else if (cursorParameters.mouseDown3 === true && player.coolDown0Ticker <= 0) {
+		} else if (cursorParameters.mouseDown1 === true && player.coolDown0Ticker <= 0) {
 			player.ability0KeyTap = false;
 			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 45 * -Math.cos(cursorParameters.angle) + player.xVelocity, 45 * -Math.sin(cursorParameters.angle) + player.yVelocity, true, false, player.width / 2, player.height / 3, 20, 0));
 
@@ -405,26 +421,115 @@ var player = {
 
 	//Ability cool down Data
 	coolDown1Ticker: 0,
-	coolDown1: 10,
+	coolDown1: 500,
 	ability1KeyTap: false,
 
+	active1State: false,
+	active1Ticker: 0,
+	active1Time: 100,
+
+	ability1Range: 1000,
+
+	enemyDistance: [],
+	enemyDistanceSort: [],
+	enemyTargetNumber: 4,
+	enemyTarget: [],
+	targetIDs: [],
+
+	projectileCounter: 0,
+
 	ability1: function() {
+
+		player.enemyDistance = [];
+		player.enemyDistanceSort = [];
+		player.enemyTarget = [];
+
+		for (var i = 0; i < enemyCollisionBoxes.length / 4; i = i + 1) {
+
+			//Get distances
+			player.enemyDistance.push(Math.hypot(((enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2]) - (player.x + player.width / 2)), ((enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3]) - (player.y + player.height / 2))));
+			player.enemyDistanceSort.push(Math.hypot(((enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2]) - (player.x + player.width / 2)), ((enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3]) - (player.y + player.height / 2))));
+
+		}
+
+		//Sort one array
+		player.enemyDistanceSort.sort(function(a, b){return a - b});
+
+		for (var i = 0; i < player.enemyTargetNumber; i = i + 1) {
+
+			for (var n = 0; n < player.enemyDistance.length; n = n + 1) {
+
+				if (player.enemyDistance[n] === player.enemyDistanceSort[i] && player.enemyDistanceSort[i] < player.ability1Range + 100) {
+					player.enemyTarget.push(n);
+
+					n = player.enemyDistance.length + 1;
+				}
+
+			}
+
+		}
+
+		//Ensure that enemy target array is full for maximum damage
+		if (player.enemyTarget.length >= 1) {
+
+			while (player.enemyTarget.length < player.enemyTargetNumber) {
+
+				player.enemyTarget.push(player.enemyTarget[0]);
+
+			}
+
+		}
+
+
+		//Execute ability if conditions allow
+
 		//Decrease cooldown timer
-		if (player.coolDown1Ticker > 0) {
+		if (player.coolDown1Ticker > 0 && player.active1State === false) {
 			player.coolDown1Ticker = player.coolDown1Ticker - 1;
 		}
 
-		if (cursorParameters.mouseDown1 === false) {
+		if (cursorParameters.mouseDown3 === false) {
 			player.ability1KeyTap = true;
-		} else if (cursorParameters.mouseDown1 === true && player.ability1KeyTap === true && player.coolDown1Ticker <= 0) {
+		} else if (cursorParameters.mouseDown3 === true && player.coolDown1Ticker <= 0 && player.enemyTarget.length != 0 && player.active1State === false && player.ability1KeyTap === true) {
+
 			player.ability1KeyTap = false;
-			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 45 * -Math.cos(cursorParameters.angle) + player.xVelocity, 45 * -Math.sin(cursorParameters.angle) + player.yVelocity, true, false, player.width / 2, player.height / 3, 20, 0));
+			player.active1State = true;
 
-			//Sound effect
-			const newAudio = abilitySounds[0].cloneNode();
-			newAudio.play();
-
+			player.active1Ticker = 0;
+			player.projectileCounter = 0;
 			player.coolDown1Ticker = player.coolDown1;
+
+		}
+
+		if (player.active1State === true) {
+
+
+			if (player.projectileCounter * Math.floor(player.active1Time / player.enemyTargetNumber) == player.active1Ticker) {
+
+				if (player.projectileCounter < player.enemyTargetNumber && player.enemyTarget.length != 0) {
+
+					enemies[player.enemyTarget[player.projectileCounter]].targetID.push(player.targetIDs.length);
+
+					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length));
+
+					player.targetIDs.push(player.targetIDs.length);
+
+					//Sound effects
+					const newAudio = abilitySounds[1].cloneNode();
+					newAudio.play();
+
+				}
+
+				player.projectileCounter = player.projectileCounter + 1;
+			}
+
+			player.active1Ticker = player.active1Ticker + 1;
+
+			if (player.active1Ticker >= player.active1Time) {
+
+				player.active1State = false;
+				player.active1Ticker = 0;
+			}
 		}
 	},
 
@@ -448,39 +553,59 @@ var player = {
 		}
 		player.damageToPlayer = [];
 	},
-	animate: function() {
+	determineState: function() {
+
 		if (player.direction === 0) {
 			if (player.jump === false) {
 				player.state = 0;
 			}
 			if (player.jump === true) {
-				if (player.jumpWall === true && player.yVelocity > 1) {
+				//Test for wall slide
+
+				player.x = player.x + 1;
+
+				if (player.collisionCheck() === true && keystrokelistener.d === true && player.yVelocity > 1) {
 					player.state = 2;
-				}
-				if (player.jumpWall === false) {
+				} else {
+
 					player.state = 0;
-					if (player.yVelocity > 16) {
+
+					if (player.yVelocity > 20) {
 						player.state = 4;
 					}
 				}
+
+				player.x = player.x - 1;
+
 			}
 		}
+
 		if (player.direction === 1) {
 			if (player.jump === false) {
 				player.state = 1;
 			}
 			if (player.jump === true) {
-				if (player.jumpWall === true && player.yVelocity > 1) {
+				//Test for wall slide
+
+				player.x = player.x - 1;
+
+				if (player.collisionCheck() === true && keystrokelistener.a === true && player.yVelocity > 1) {
 					player.state = 3;
-				}
-				if (player.jumpWall === false) {
+				} else {
 					player.state = 1;
-					if (player.yVelocity > 16) {
+
+					if  (player.yVelocity > 20) {
 						player.state = 5;
 					}
 				}
+
+				player.x = player.x + 1;
+
 			}
 		}
+	},
+	animate: function() {
+
 	},
 	render: function() {
 		ctx.beginPath();
@@ -504,6 +629,18 @@ var player = {
 			ctx.drawImage(playerResources[5], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 		}
 
+
+		if (player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) {
+			ctx.arc(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range, 0, 2 * Math.PI);
+			ctx.lineWidth = 12;
+			ctx.strokeStyle = '#081100';
+			ctx.stroke();
+
+			ctx.lineWidth = 5;
+			ctx.strokeStyle = '#6fb032';
+			ctx.stroke();
+		}
+
 		ctx.closePath();
 	}
 };
@@ -518,16 +655,29 @@ var map = {
 	tileMapWidth: 200,
 	tileWidth: 40,
 	tileHeight: 40,
+	level: 0,
 	generateMap: function() {
-				var genc = document.getElementById("Canvas");
-				var genctx = genc.getContext("2d");
-				var img = document.getElementById("tilemap");
+				map.tileMap = [];
+				enemies = [];
+
+				var genc = document.getElementById('Canvas');
+				var genctx = genc.getContext('2d');
+
+				genctx.clearRect(0, 0, genc.width, genc.height);
+
+				var img = document.getElementById(map.level);
+				var imgHeight = document.getElementById(map.level).height;
+
+				genc.style.width = String(imgHeight + 'px');
+
+				console.log(map.level);
+				console.log(imgHeight);
+
+
 				genctx.drawImage(img, 0, 0);
 				var imgData = genctx.getImageData(0, 0, genc.width, genc.height);
 
-				var i;
-
-				for (i = 0; i < imgData.data.length; i += 4) {
+				for (var i = 0; i < imgData.data.length; i += 4) {
 						if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 								map.tileMap.push(1);
 						} else if (imgData.data[i+3] > 0 && imgData.data[i] > 0 && imgData.data[i] <= 60 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
@@ -538,53 +688,65 @@ var map = {
 								map.tileMap.push(4);
 						} else if (imgData.data[i+3] > 0 && imgData.data[i] > 180 && imgData.data[i] <= 240 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 								map.tileMap.push(5);
+						} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 120 && imgData.data[i + 1] <= 180 && imgData.data[i + 2] == 0) {
+								map.tileMap.push(6);
+						} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 180 && imgData.data[i + 1] <= 240 && imgData.data[i + 2] == 0) {
+								map.tileMap.push(7);
 						} else {
 								map.tileMap.push(0);
 						}
 				}
-				ctx.putImageData(imgData, 0, 0);
 
-				document.getElementById("tilemap").style.display = "none";
-				document.getElementById("Canvas").style.display = "none";
+				for (var i = 0; i < map.tileMap.length; i = i + 1) {
+					if (map.tileMap[i] == 7) {
+						player.x = i % map.tileMapWidth * map.tileWidth;
+						player.y = (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight;
+					}
+				}
+
 	},
 	render: function() {
 		for (var i = 0; i <= map.tileMap.length; i = i + 1) {
 			ctx.beginPath();
       ctx.fillStyle = '#47048a';
 
-			if (map.tileMap[i] != 0) {
-				if (map.tileMap[i] == 1) {
-					ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
-					ctx.closePath();
+			if (i % map.tileMapWidth * map.tileWidth - player.x > -(renderParameters.windowWidth + map.tileWidth) && i % map.tileMapWidth * map.tileWidth - player.x < renderParameters.windowWidth && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset > -renderParameters.windowHeight && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset < renderParameters.windowHeight * 2) {
+
+				if (map.tileMap[i] != 0) {
+					if (map.tileMap[i] == 1) {
+						ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
+						ctx.closePath();
+					}
+					if (map.tileMap[i] == 2) {
+						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.closePath();
+						ctx.fill();
+					}
+					if (map.tileMap[i] == 3) {
+						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.closePath();
+						ctx.fill();
+					}
+					if (map.tileMap[i] == 4) {
+						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.closePath();
+						ctx.fill();
+					}
+					if (map.tileMap[i] == 5) {
+						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+						ctx.closePath();
+						ctx.fill();
+					}
 				}
-				if (map.tileMap[i] == 2) {
-					ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.closePath();
-					ctx.fill();
-				}
-				if (map.tileMap[i] == 3) {
-					ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.closePath();
-					ctx.fill();
-				}
-				if (map.tileMap[i] == 4) {
-					ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.closePath();
-					ctx.fill();
-				}
-				if (map.tileMap[i] == 5) {
-					ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-					ctx.closePath();
-					ctx.fill();
-				}
+
 			}
 		}
 	}
@@ -601,10 +763,17 @@ var userInterface = {
 	boxHeight: 160,
 	boxSpacing: 40,
 	abilityBorderWidth: 20,
+
 	healthWidth: 960,
 	apparentHealthWidth: 960,
 	healthHeight: 80,
 	healthBorderWidth: 20,
+
+	playerIconWidth: 500,
+	playerIconHeight: 500,
+	playerIconXOffset: -520,
+	playerIconYOffset: -500,
+
 
 	render: function() {
 
@@ -641,6 +810,8 @@ var userInterface = {
 		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.healthBorderWidth, (userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100), userInterface.healthHeight - userInterface.healthBorderWidth * 2);
 
 		ctx.drawImage(userInterfaceResources[i], (i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing, userInterface.healthWidth, userInterface.healthHeight);
+
+		ctx.drawImage(userInterfaceResources[5], renderParameters.windowWidth * 2 + userInterface.playerIconXOffset, renderParameters.windowHeight * 2 + userInterface.playerIconYOffset, userInterface.playerIconWidth, userInterface.playerIconHeight);
 
 		ctx.closePath();
 	}
@@ -811,44 +982,53 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	this.type = type;
 	this.delete = false;
 	this.move = function() {
-		this.angle = Math.atan2(this.yVelocity, this.xVelocity);
 
-		for (var i = 0; i < Math.round(Math.abs(this.xVelocity)); i = i + 1) {
-			if (this.xVelocity > 0) {
-				this.x = this.x + 1;
-			} else if (this.xVelocity < 0) {
-				this.x = this.x - 1;
-			}
-			if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0) {
-				this.delete = true;
-			}
+		//Player ability0 or enemy projectile
+		if (this.type === 0 ||this.type === 1) {
+			this.angle = Math.atan2(this.yVelocity, this.xVelocity);
 
-			//DETECT ENEMY COLLISION
-			if (this.enemy === false && this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x > enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y > enemyCollisionBoxes[i * 4 + 1]) {
-				this.delete = true;
-				enemies[i].takeDamage();
-			}
-		}
-		for (var i = 0; i < Math.round(Math.abs(this.yVelocity)); i = i + 1) {
-			if (this.yVelocity > 0) {
-				this.y = this.y + 1;
-			} else if (this.yVelocity < 0) {
-				this.y = this.y - 1;
-			}
-			if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0) {
-				this.delete = true;
-			}
+			for (var i = 0; i < Math.round(Math.abs(this.xVelocity)); i = i + 1) {
+				if (this.xVelocity > 0) {
+					this.x = this.x + 1;
+				} else if (this.xVelocity < 0) {
+					this.x = this.x - 1;
+				}
+				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0) {
+					this.delete = true;
+				}
 
-			//DETECT ENEMY COLLISION
-			if (this.enemy === false && this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x > enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y > enemyCollisionBoxes[i * 4 + 1]) {
-				this.delete = true;
-				enemies[i].takeDamage();
+				//DETECT ENEMY COLLISION
+				if (this.enemy === false && this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x > enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y > enemyCollisionBoxes[i * 4 + 1]) {
+					this.delete = true;
+					enemies[i].takeDamage();
+				}
 			}
+			for (var i = 0; i < Math.round(Math.abs(this.yVelocity)); i = i + 1) {
+				if (this.yVelocity > 0) {
+					this.y = this.y + 1;
+				} else if (this.yVelocity < 0) {
+					this.y = this.y - 1;
+				}
+				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0) {
+					this.delete = true;
+				}
+
+				//DETECT ENEMY COLLISION
+				if (this.enemy === false && this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x > enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y > enemyCollisionBoxes[i * 4 + 1]) {
+					this.delete = true;
+					enemies[i].takeDamage();
+				}
+			}
+			if (this.gravity === true) {
+				this.yVelocity = this.yVelocity + physicsParameters.gravity / 16;
+			}
+			this.attackPlayer();
 		}
-		if (this.gravity === true) {
-			this.yVelocity = this.yVelocity + physicsParameters.gravity / 16;
+
+		//Player ability1
+		if (this.type === 2) {
+
 		}
-		this.attackPlayer();
 	},
 	this.attackPlayer = function() {
 		if (this.x >= player.x && this.x <= player.x + player.width && this.y >= player.y && this.y <= player.y + player.height) {
@@ -875,6 +1055,88 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	}
 }
 
+//missiles
+
+let missiles = [];
+
+function Missile(x, y, xVelocity, yVelocity, velocity, angle, target) {
+	this.x = x;
+	this.y = y;
+	this.width = 40;
+	this.height = 40;
+	this.velocity = velocity;
+	this.xVelocity = xVelocity;
+	this.yVelocity = yVelocity;
+	this.angle = angle;
+	this.delete = false;
+	this.target = target;
+
+	this.move = function() {
+
+		for (var i = 0; i < enemies.length; i = i + 1) {
+
+			for (var n = 0; n < enemies[i].targetID.length; n = n + 1) {
+
+				//Code in here
+				if (this.target === enemies[i].targetID[n]) {
+
+					this.angle = Math.atan2((this.y + this.height / 2) - (enemies[i].y + enemies[i].height / 2), (this.x + this.width / 2) - (enemies[i].x + enemies[i].width / 2))
+
+					if (this.xVelocity > this.velocity * -Math.cos(this.angle)) {
+						this.xVelocity = this.xVelocity - (this.xVelocity - this.velocity * -Math.cos(this.angle)) * 0.5;
+					}
+					if (this.xVelocity < this.velocity * -Math.cos(this.angle)) {
+						this.xVelocity = this.xVelocity - (this.xVelocity - this.velocity * -Math.cos(this.angle)) * 0.5;
+					}
+					if (this.yVelocity > this.velocity * -Math.sin(this.angle)) {
+						this.yVelocity = this.yVelocity - (this.yVelocity - this.velocity * -Math.sin(this.angle)) * 0.5;
+					}
+					if (this.yVelocity < this.velocity * -Math.sin(this.angle)) {
+						this.yVelocity = this.yVelocity - (this.yVelocity - this.velocity * -Math.sin(this.angle)) * 0.5;
+					}
+
+					// this.x = this.x + this.xVelocity;
+					// this.y = this.y + this.yVelocity;
+
+					if (enemies[i].delete === true) {
+						this.delete = true;
+					}
+
+					for (var n = 0; n < Math.abs(Math.hypot(this.xVelocity, this.yVelocity)); n = n + 1) {
+
+						this.x = this.x + Math.cos(Math.atan2(this.yVelocity, this.xVelocity));
+						this.y = this.y + Math.sin(Math.atan2(this.yVelocity, this.xVelocity));
+
+
+						if (this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x + this.width> enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y  + this.height> enemyCollisionBoxes[i * 4 + 1]) {
+							if (this.delete === false) {
+								enemies[i].takeDamage();
+							}
+
+							this.delete = true;
+						}
+
+					}
+
+				}
+			}
+
+		}
+
+	}
+
+
+
+	this.render = function() {
+		ctx.beginPath();
+
+		ctx.fillRect((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
+
+		ctx.closePath();
+	}
+
+}
+
 //Enemies
 let enemies = [];
 var enemyCollisionBoxes = [];
@@ -886,7 +1148,7 @@ function Enemy0(x, y, width, height) {
 	this.height = height;
   this.xVelocity = 0;
   this.yVelocity = 0;
-	this.xVelocityMax = 10;
+	this.xVelocityMax = 12;
 	this.xAcceleration = 1 + Math.random();
 	this.slope = 0;
 	this.slopeMax = 3;
@@ -907,6 +1169,7 @@ function Enemy0(x, y, width, height) {
 	this.direction = 0;
 	this.delete = false;
 	this.enemyID = 0;
+	this.targetID = [];
 
 	this.loop = function() {
 			this.move();
@@ -1067,6 +1330,7 @@ function Enemy0(x, y, width, height) {
 		enemyCollisionBoxes.push(this.y);
 		enemyCollisionBoxes.push(this.width);
 		enemyCollisionBoxes.push(this.height);
+
 	}
 
   this.attack = function() {
@@ -1204,6 +1468,7 @@ function Enemy1(x, y, width, height) {
 	this.targetLocked = false;
 	this.delete = false;
 	this.enemyID = 0;
+	this.targetID = [];
 
 	this.loop = function() {
 		if (this.x + this.width / 2 > player.x + player.width / 2 - this.trackingRange && this.x + this.width / 2 < player.x + player.width / 2 + this.trackingRange) {
@@ -1298,19 +1563,17 @@ function Enemy1(x, y, width, height) {
 initializeObjects();
 
 function initializeObjects() {
+
+	ctx.imageSmoothingEnabled = false;
+
 	//Map generator
-	while(document.getElementById("tilemap").complete === false) {
+	while(document.getElementById(map.level).complete === false) {
+
 	}
 	map.generateMap();
 
-	//window.requestAnimationFrame(mainLoop);
 	window.requestAnimationFrame(gameTick);
-
-	//Set game to run at 120Hz
-	//window.setInterval(mainLoop, 1000 / renderParameters.gameSpeed);
-
 	window.requestAnimationFrame(render);
-	// window.setInterval(render, 1000 / renderParameters.gameSpeed);
 
 
 	enemies.push(new Enemy0(1960, 1880, 80, 120));
@@ -1347,7 +1610,7 @@ function gameTick() {
 	while (loopTime < timestamp() / (1000 / renderParameters.gameSpeed)) {
 		mainLoop()
 		loopTime = loopTime + 1;
-		if (timestamp() / (1000 / renderParameters.gameSpeed) - loopTime > 500) {
+		if (timestamp() / (1000 / renderParameters.gameSpeed) - loopTime > 50) {
 			loopTime = timestamp() / (1000 / renderParameters.gameSpeed);
 		}
 	}
@@ -1360,11 +1623,20 @@ function timestamp() {
 
 //Main process loop
 function mainLoop() {
+
 	enemyCollisionBoxes = [];
 
-	enemies.forEach(i => {
-		i.returnCollisionBox();
-	});
+	//Find enemy hitboxes
+	for (var i = 0; i < enemies.length; i = i + 1)  {
+
+		enemies[i].returnCollisionBox()
+
+	}
+
+
+	////////////////////////////
+ //////PLAYER FUNCTIONS//////
+////////////////////////////
 
 	//Player functions
 	player.move();
@@ -1375,34 +1647,73 @@ function mainLoop() {
 
 	player.takeDamage();
 
+	player.determineState();
 	player.animate();
+
+
+	  /////////////////////////
+	 //////MOVE ENTITIES//////
+	/////////////////////////
+
+	//enemyHandler
+	for (var i = 0; i < enemies.length; i = i + 1)  {
+
+		enemies[i].enemyID = i;
+		enemies[i].loop();
+
+	}
 
 	//Bullet handler
 	for (var i = 0; i < bullets.length; i = i + 1)  {
 
     bullets[i].move();
 
-    if (bullets[i].delete === true) {
-      bullets.splice(i, 1);
-    }
   }
 
-	//enemyHandler
+	//Missile handler
+	for (var i = 0; i < missiles.length; i = i + 1)  {
 
-	for (var i = 0; i < enemies.length; i = i + 1)  {
-		enemies[i].enemyID = i;
-    enemies[i].loop();
+		missiles[i].move();
 
-    if (enemies[i].delete === true) {
-      enemies.splice(i, 1);
-    }
 	}
+
+
+	  ///////////////////////////
+	 //////DELETE ENTITIES//////
+	///////////////////////////
+
+		//Bullet handler
+		for (var i = 0; i < bullets.length; i = i + 1)  {
+
+	    if (bullets[i].delete === true) {
+	      bullets.splice(i, 1);
+	    }
+	  }
+
+		//Missile handler
+		for (var i = 0; i < missiles.length; i = i + 1)  {
+
+			if (missiles[i].delete === true) {
+				missiles.splice(i, 1);
+			}
+		}
+
+		//enemyHandler
+
+		for (var i = 0; i < enemies.length; i = i + 1)  {
+
+	    if (enemies[i].delete === true) {
+	      enemies.splice(i, 1);
+	    }
+		}
+
 }
 
 
 //Draw objects on screen
 function render() {
 	'use strict';
+
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	scenery0.render();
 	map.render();
@@ -1411,6 +1722,12 @@ function render() {
 
 	//Render Bullets
 	bullets.forEach(i => {
+		i.render();
+	});
+	userInterface.render();
+
+	//Render missiles
+	missiles.forEach(i => {
 		i.render();
 	});
 	userInterface.render();
@@ -1432,7 +1749,7 @@ function render() {
 function renderLine(x1, y1, x2, y2) {
 	ctx.beginPath;
 
-	ctx.lineCap = "round";
+	ctx.lineCap = 'round';
 
 	ctx.moveTo(x1, y1);
 	ctx.lineTo(x2, y2);
