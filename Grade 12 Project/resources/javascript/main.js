@@ -54,6 +54,15 @@ for (var i = 0; i < 6; ++i) {
 	userInterfaceResources.push(img);
 }
 
+var startScreenResources = [];
+
+for (var i = 0; i < 4; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/userinterface/startScreen/' + i + '.png';
+
+	startScreenResources.push(img);
+}
+
 var sceneryResources = [];
 
 for (var i = 0; i < 1; ++i) {
@@ -65,7 +74,7 @@ for (var i = 0; i < 1; ++i) {
 
 var backdropResources = [];
 
-for (var i = 0; i < 2; ++i) {
+for (var i = 0; i < 3; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/environment/backdrops/' + i + '.png';
 
@@ -444,7 +453,7 @@ var player = {
 
 	enemyDistance: [],
 	enemyDistanceSort: [],
-	enemyTargetNumber: 4,
+	enemyTargetNumber: 6,
 	enemyTarget: [],
 	targetIDs: [],
 
@@ -664,7 +673,7 @@ var player = {
 
 var map = {
 	tileMap: [],
-	tileMapWidth: 200,
+	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
 	level: 0,
@@ -679,12 +688,12 @@ var map = {
 
 		var img = document.getElementById(map.level);
 		var imgHeight = document.getElementById(map.level).height;
+		var imgWidth = document.getElementById(map.level).width;
 
-		genc.style.width = String(imgHeight + 'px');
+		map.tileMapWidth = imgWidth;
 
-		console.log(map.level);
-		console.log(imgHeight);
-
+		genc.style.height = String(imgHeight + 'px');
+		genc.style.width = String(imgWidth + 'px');
 
 		genctx.drawImage(img, 0, 0);
 		var imgData = genctx.getImageData(0, 0, genc.width, genc.height);
@@ -704,17 +713,36 @@ var map = {
 						map.tileMap.push(6);
 				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 180 && imgData.data[i + 1] <= 240 && imgData.data[i + 2] == 0) {
 						map.tileMap.push(7);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] > 0 && imgData.data[i + 2] <= 60) {
+						map.tileMap.push(8);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] > 60 && imgData.data[i + 2] <= 120) {
+						map.tileMap.push(9);
 				} else {
 						map.tileMap.push(0);
 				}
 		}
 
+		//Generate special map data
 		for (var i = 0; i < map.tileMap.length; i = i + 1) {
+
+			//Player spawn point
 			if (map.tileMap[i] == 7) {
 				player.x = i % map.tileMapWidth * map.tileWidth;
 				player.y = (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight;
 			}
+
+
+			//Enemies
+			if (map.tileMap[i] == 8) {
+				enemies.push(new Enemy0(i % map.tileMapWidth * map.tileWidth, (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight, 80, 120));
+			}
+
+			if (map.tileMap[i] == 9) {
+				enemies.push(new Enemy1(i % map.tileMapWidth, (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight, 80, 80));
+			}
+
 		}
+
 
 		renderParameters.pause = false;
 
@@ -765,6 +793,62 @@ var map = {
 		}
 	}
 };
+
+  ////////////////////////
+ //////START SCREEN//////
+////////////////////////
+
+var startScreen = {
+	active: true,
+	y: 0,
+	transition: false,
+	transitionDirection: false,
+	loop: function() {
+		if (keystrokelistener.space === true) {
+			startScreen.transition = true;
+		}
+
+		if (startScreen.transition === true) {
+
+			if (startScreen.y <= renderParameters.windowHeight + 100 && startScreen.transitionDirection === false) {
+				startScreen.y = startScreen.y + 15;
+			}
+			if (startScreen.y > renderParameters.windowHeight) {
+				startScreen.transitionDirection = true;
+			}
+			if (startScreen.y > 0 && startScreen.transitionDirection === true) {
+				startScreen.y = startScreen.y - 15;
+			}
+			if (startScreen.y <= 0 && startScreen.transitionDirection === true) {
+				startScreen.active = false;
+			}
+		}
+
+	},
+	render: function() {
+		ctx.beginPath();
+
+		if (startScreen.transitionDirection === false) {
+			//Background
+			ctx.drawImage(startScreenResources[0], 0, 0, 2 * renderParameters.windowWidth, 2 * renderParameters.windowHeight);
+
+			//UI elements
+			ctx.drawImage(startScreenResources[1], renderParameters.windowWidth * 0.5, renderParameters.windowHeight * 0.4 + Math.round(20 * Math.sin(loopTime / 70)) * 2, renderParameters.windowWidth, renderParameters.windowHeight / 2);
+			ctx.drawImage(startScreenResources[2], renderParameters.windowWidth * 0.9375, renderParameters.windowHeight * 1.55 + Math.round(10 * Math.sin(loopTime / 70)) * 2, renderParameters.windowWidth / 8, renderParameters.windowHeight / 8);
+
+			//ctx.drawImage(startScreenResources[3], renderParameters.windowWidth * 0.95, renderParameters.windowHeight * 1 + Math.round(12 * Math.sin(loopTime / 70)) * 2, 1000, 1500);
+		}
+
+
+		ctx.fillStyle = '#000000';
+		ctx.fillRect(0, 0, 2 * renderParameters.windowWidth, startScreen.y);
+		ctx.fillRect(0, 2 * renderParameters.windowHeight, 2 * renderParameters.windowWidth, -startScreen.y);
+
+
+		ctx.closePath();
+	}
+}
+
 
 
   /////////////////////
@@ -1046,7 +1130,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 				} else if (this.xVelocity < 0) {
 					this.x = this.x - 1;
 				}
-				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0) {
+				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0 && map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] < 6) {
 					this.delete = true;
 				}
 
@@ -1062,7 +1146,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 				} else if (this.yVelocity < 0) {
 					this.y = this.y - 1;
 				}
-				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0) {
+				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0 && map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] < 6) {
 					this.delete = true;
 				}
 
@@ -1490,10 +1574,10 @@ function Enemy0(x, y, width, height) {
 		//Draw using enemy textures
 
 		if (this.direction == 0) {
-			ctx.drawImage(enemy0Resources[0], Math.round((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset), (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[0], Math.round(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 		if (this.direction == 1) {
-			ctx.drawImage(enemy0Resources[1], Math.round((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset), (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[1], Math.round(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2 ) * 2, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 
 	  ctx.closePath();
@@ -1628,27 +1712,6 @@ function initializeObjects() {
 	window.requestAnimationFrame(gameTick);
 	window.requestAnimationFrame(render);
 
-
-	enemies.push(new Enemy0(1960, 1880, 80, 120));
-	enemies.push(new Enemy0(1960, 1880, 80, 120));
-	enemies.push(new Enemy0(560, 1720, 80, 120));
-	enemies.push(new Enemy0(560, 1720, 80, 120));
-	enemies.push(new Enemy0(120, 1520, 80, 120));
-	enemies.push(new Enemy0(120, 1520, 80, 120));
-	enemies.push(new Enemy0(1960, 1880, 80, 120));
-	enemies.push(new Enemy0(1960, 1880, 80, 120));
-	enemies.push(new Enemy0(560, 1720, 80, 120));
-	enemies.push(new Enemy0(560, 1720, 80, 120));
-	enemies.push(new Enemy0(120, 1520, 80, 120));
-	enemies.push(new Enemy0(120, 1520, 80, 120));
-
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
-	enemies.push(new Enemy1(120, 1560, 80, 80));
 }
 
 
@@ -1678,7 +1741,14 @@ function timestamp() {
 //Main process loop
 function mainLoop() {
 
-	if (renderParameters.pause === false) {
+	if (startScreen.active === true) {
+		keystrokelistener.logKeystrokes();
+		startScreen.loop();
+	}
+
+
+	if (renderParameters.pause === false && startScreen.active === false) {
+
 
 		enemyCollisionBoxes = [];
 
@@ -1765,6 +1835,7 @@ function mainLoop() {
 
 	}
 
+
 	if (renderParameters.pause === true) {
 		stageTransition.transition();
 	}
@@ -1806,6 +1877,11 @@ function render() {
 	userInterface.render();
 
 	stageTransition.render();
+
+	if (startScreen.active === true) {
+		startScreen.render();
+	}
+
 
 	window.requestAnimationFrame(render);
 }
