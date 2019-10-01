@@ -401,18 +401,34 @@ var player = {
 						if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
 							player.collision = true;
 						}
-					} else if (map.tileMap[tileCheck] == 6) {
-						if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
-
-							//Pauses the game for stage transition
-							renderParameters.pause = true;
-
-						}
 					}
 				}
 			}
 		}
 		return player.collision;
+	},
+	collisionCheckBlock: function() {
+		for (var i = 0; i <= (player.width / map.tileWidth + 1) * (player.height / map.tileHeight) - 1; i = i + 1) {
+			var tileCheck = ((player.x - player.x % map.tileWidth) / map.tileWidth) + ((player.y - player.y % map.tileHeight) / map.tileHeight * map.tileMapWidth) + (i % (player.width / map.tileWidth + 1)) + (map.tileMapWidth * (i - i % (player.width / map.tileWidth + 1)) / (player.width / map.tileWidth + 1));
+			if (map.tileMap[tileCheck] != 0) {
+				if (map.tileMap[tileCheck] == 6) {
+					if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
+
+						//Pauses the game for stage transition
+						renderParameters.pause = true;
+
+					}
+				} else if (map.tileMap[tileCheck] == 10) {
+					if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
+
+						//Damages Player
+						player.damageToPlayer.push(-0.1);
+						player.damageToPlayer.push(0);
+
+					}
+				}
+			}
+		}
 	},
 
 	//Ability cool down Data
@@ -563,11 +579,9 @@ var player = {
 
 	},
 	takeDamage: function() {
-		for (var i = 0; i < player.damageToPlayer.length; i = i + 1) {
-			player.health = player.health + player.damageToPlayer[i];
-		}
-		if (player.damageToPlayer.length > 0) {
-			player.xVelocity = player.xVelocity + 10 * Math.random() - 5;
+		for (var i = 0; i < player.damageToPlayer.length / 2; i = i + 1) {
+			player.health = player.health + player.damageToPlayer[i * 2];
+			player.xVelocity = player.xVelocity + player.damageToPlayer[i * 2 + 1];
 		}
 		if (player.health < 0) {
 			player.health = 0;
@@ -717,6 +731,8 @@ var map = {
 						map.tileMap.push(8);
 				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] > 60 && imgData.data[i + 2] <= 120) {
 						map.tileMap.push(9);
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 255 && imgData.data[i + 1] > 0 && imgData.data[i + 1] < 30 && imgData.data[i + 2] == 255) {
+						map.tileMap.push(10);
 				} else {
 						map.tileMap.push(0);
 				}
@@ -786,6 +802,13 @@ var map = {
 						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
 						ctx.closePath();
 						ctx.fill();
+					}
+					if (map.tileMap[i] == 10) {
+
+						ctx.fillStyle = '#FF0000'
+
+						ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
+						ctx.closePath();
 					}
 				}
 
@@ -1171,6 +1194,15 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 		if (this.x >= player.x && this.x <= player.x + player.width && this.y >= player.y && this.y <= player.y + player.height) {
 			if (this.enemy === true) {
 				player.damageToPlayer.push(-1);
+
+				if (this.xVelocity > 0) {
+					player.damageToPlayer.push(20);
+				} else if (this.xVelocity < 0) {
+					player.damageToPlayer.push(-20);
+				} else {
+					player.damageToPlayer.push(0);
+				}
+
 				this.delete = true;
 			}
 		}
@@ -1512,6 +1544,14 @@ function Enemy0(x, y, width, height) {
 					//Damage value per attack
 					if (this.x < player.x + player.width + this.attackDistance * 5 && this.x + this.width> player.x - this.attackDistance * 5 && this.y + this.height > player.y - this.attackDistance) {
 						player.damageToPlayer.push(-this.attackDamage);
+
+						if (this.xVelocity > 0) {
+							player.damageToPlayer.push(10);
+						} else if (this.xVelocity < 0) {
+							player.damageToPlayer.push(-10);
+						} else {
+							player.damageToPlayer.push(0);
+						}
 					}
 
 					//Play sound effect
@@ -1619,6 +1659,7 @@ function Enemy1(x, y, width, height) {
 	}
 
 	this.move = function() {
+
 		this.angle = this.angle + 0.0045;
 
 		this.xTarget = player.x + this.attackDistance * Math.cos(Math.PI * Math.sin(this.angle));
@@ -1630,10 +1671,12 @@ function Enemy1(x, y, width, height) {
 	}
 
 	this.returnCollisionBox = function() {
+
 		enemyCollisionBoxes.push(this.x);
 		enemyCollisionBoxes.push(this.y);
 		enemyCollisionBoxes.push(this.width);
 		enemyCollisionBoxes.push(this.height);
+
 	}
 
   this.attack = function() {
@@ -1647,21 +1690,26 @@ function Enemy1(x, y, width, height) {
 		for (var i = 0; i < Math.abs(Math.hypot((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))); i = i + 1) {
 
 			if (map.tileMap[(this.xTracker - this.xTracker % map.tileWidth) / map.tileWidth + map.tileMapWidth * (this.yTracker - this.yTracker % map.tileHeight) / map.tileHeight] > 0) {
+
 				this.targetLocked = false;
+
 			}
 
 			this.xTracker = this.xTracker - Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)));
+
 			this.yTracker = this.yTracker - Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)));
 		}
 
 		//Attack if cool down is 0 and has line of sight
 		if (this.coolDownTicker <= 0) {
 			if (Math.abs((this.x + this.width / 2) - (player.x + player.width / 2)) > this.attackDistance / 2 && this.targetLocked === true) {
+
 				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10 * -Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), 10 * -Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), false, true, this.width / 2, this.height / 2, 20, 1));
 
 				this.coolDownTicker = this.coolDown;
 			}
 		} else {
+
 			this.coolDownTicker = this.coolDownTicker - 1;
 		}
   }
@@ -1685,13 +1733,18 @@ function Enemy1(x, y, width, height) {
 		ctx.beginPath();
 
 		if (this.x + this.width / 2 < player.x + player.width / 2) {
+
 			ctx.drawImage(enemy1Resources[0], (this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
-		}
-		if (this.x + this.width / 2 > player.x + player.width / 2) {
-			ctx.drawImage(enemy1Resources[1], (this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+
 		}
 
-	    ctx.closePath();
+		if (this.x + this.width / 2 > player.x + player.width / 2) {
+
+			ctx.drawImage(enemy1Resources[1], (this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+
+		}
+
+	  ctx.closePath();
   }
 }
 
@@ -1726,8 +1779,11 @@ function gameTick() {
 	while (loopTime < timestamp() / (1000 / renderParameters.gameSpeed)) {
 		mainLoop()
 		loopTime = loopTime + 1;
+
 		if (timestamp() / (1000 / renderParameters.gameSpeed) - loopTime > 50) {
+
 			loopTime = timestamp() / (1000 / renderParameters.gameSpeed);
+
 		}
 	}
 
@@ -1770,6 +1826,8 @@ function mainLoop() {
 		player.ability0();
 		player.ability1();
 		player.ability2();
+
+		player.collisionCheckBlock();
 
 		player.takeDamage();
 
@@ -1884,9 +1942,11 @@ function render() {
 
 
 	window.requestAnimationFrame(render);
+
 }
 
 function renderLine(x1, y1, x2, y2) {
+
 	ctx.beginPath;
 
 	ctx.lineCap = 'round';
@@ -1903,4 +1963,5 @@ function renderLine(x1, y1, x2, y2) {
 	ctx.strokeStyle = '#6fb032';
 	ctx.stroke();
 	ctx.closePath();
+
 }
