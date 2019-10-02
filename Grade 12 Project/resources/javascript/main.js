@@ -576,12 +576,17 @@ var player = {
 	ability2KeyTap: false,
 
 	ability2: function() {
-
 	},
 	takeDamage: function() {
 		for (var i = 0; i < player.damageToPlayer.length / 2; i = i + 1) {
 			player.health = player.health + player.damageToPlayer[i * 2];
-			player.xVelocity = player.xVelocity + player.damageToPlayer[i * 2 + 1];
+
+
+			//Player knockback
+			if (Math.abs(player.xVelocity) < player.xVelocityMax) {
+				player.xVelocity = player.xVelocity + player.damageToPlayer[i * 2 + 1];
+			}
+
 		}
 		if (player.health < 0) {
 			player.health = 0;
