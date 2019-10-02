@@ -1135,6 +1135,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	this.y = y + yOffset;
 	this.xVelocity = xVelocityInitial;
 	this.yVelocity = yVelocityInitial;
+	this.velocity = 0;
 	this.angle = angle;
 	this.gravity = gravity;
 	this.enemy = enemy;
@@ -1143,53 +1144,49 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	this.delete = false;
 	this.move = function() {
 
-		//Player ability0 or enemy projectile
-		if (this.type === 0 ||this.type === 1) {
-			this.angle = Math.atan2(this.yVelocity, this.xVelocity);
+		this.velocity = Math.round(Math.hypot(this.xVelocity, this.yVelocity));
+		this.angle = Math.atan2(this.yVelocity, this.xVelocity);
 
-			for (var i = 0; i < Math.round(Math.abs(this.xVelocity)); i = i + 1) {
-				if (this.xVelocity > 0) {
-					this.x = this.x + 1;
-				} else if (this.xVelocity < 0) {
-					this.x = this.x - 1;
-				}
-				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0 && map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] < 6) {
-					this.delete = true;
-				}
+		for (var i = 0; i < this.velocity; i = i + 1) {
+			this.x = this.x + 1 * Math.cos(this.angle);
+			this.y = this.y + 1 * Math.sin(this.angle);
 
-				//DETECT ENEMY COLLISION
-				if (this.enemy === false && this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x > enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y > enemyCollisionBoxes[i * 4 + 1]) {
-					this.delete = true;
-					enemies[i].takeDamage();
+			this.collisionCheck();
+
+			if (this.delete === false) {
+				if (this.enemy === false) {
+
+					this.attackEnemy();
+
+				} else if (this.enemy === true) {
+
+					this.attackPlayer();
+
 				}
 			}
-			for (var i = 0; i < Math.round(Math.abs(this.yVelocity)); i = i + 1) {
-				if (this.yVelocity > 0) {
-					this.y = this.y + 1;
-				} else if (this.yVelocity < 0) {
-					this.y = this.y - 1;
-				}
-				if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0 && map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] < 6) {
-					this.delete = true;
-				}
 
-				//DETECT ENEMY COLLISION
-				if (this.enemy === false && this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x > enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y > enemyCollisionBoxes[i * 4 + 1]) {
-					this.delete = true;
-					enemies[i].takeDamage();
-				}
-			}
-			if (this.gravity === true) {
-				this.yVelocity = this.yVelocity + physicsParameters.gravity / 16;
-			}
-			this.attackPlayer();
 		}
 
-		//Player ability1
-		if (this.type === 2) {
-
+	}
+	this.collisionCheck = function() {
+		if (map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] > 0 && map.tileMap[(((this.x + this.radius * Math.cos(this.angle)) - ((this.x + this.radius * Math.cos(this.angle)) % map.tileWidth)) / map.tileWidth) + map.tileMapWidth * (((this.y + this.radius * Math.sin(this.angle)) - ((this.y + this.radius * Math.sin(this.angle)) % map.tileHeight)) / map.tileHeight)] < 6) {
+			this.delete = true;
 		}
-	},
+	}
+	this.attackEnemy = function () {
+
+		for (var n = 0; n < enemies.length; n = n + 1) {
+			if (this.x < enemyCollisionBoxes[n * 4] + enemyCollisionBoxes[n * 4 + 2] && this.x > enemyCollisionBoxes[n * 4] && this.y < enemyCollisionBoxes[n * 4 + 1] + enemyCollisionBoxes[n * 4 + 3] && this.y > enemyCollisionBoxes[n * 4 + 1]) {
+				if (this.delete === false) {
+					enemies[n].takeDamage();
+				}
+
+				this.delete = true;
+			}
+		}
+
+
+	}
 	this.attackPlayer = function() {
 		if (this.x >= player.x && this.x <= player.x + player.width && this.y >= player.y && this.y <= player.y + player.height) {
 			if (this.enemy === true) {
@@ -1206,7 +1203,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 				this.delete = true;
 			}
 		}
-	},
+	}
 	this.render = function() {
 
 		ctx.beginPath();
