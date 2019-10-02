@@ -1,0 +1,1 @@
+The following images must be converted into BASE64 and pasted into an image in the 'index.html' file. This is due to a CORS security feature.

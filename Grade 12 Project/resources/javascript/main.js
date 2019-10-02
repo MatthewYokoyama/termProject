@@ -63,6 +63,15 @@ for (var i = 0; i < 4; ++i) {
 	startScreenResources.push(img);
 }
 
+var mapTextureResources = [];
+
+for (var i = 0; i < 4; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/environment/tiles/' + i + '.png';
+
+	mapTextureResources.push(img);
+}
+
 var sceneryResources = [];
 
 for (var i = 0; i < 1; ++i) {
@@ -692,6 +701,7 @@ var player = {
 
 var map = {
 	tileMap: [],
+	tileMapTextures: [],
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
@@ -764,61 +774,97 @@ var map = {
 
 		}
 
+	},
+	generateMapTextures: function() {
+		map.tileMapTextures = [];
+
+		var genc = document.getElementById('Canvas');
+		var genctx = genc.getContext('2d');
+
+		genctx.clearRect(0, 0, genc.width, genc.height);
+
+		var img = document.getElementById(String(map.level + 'textures'));
+		var imgHeight = document.getElementById(String(map.level + 'textures')).height;
+		var imgWidth = document.getElementById(String(map.level + 'textures')).width;
+
+		map.tileMapWidth = imgWidth;
+
+		genc.style.height = String(imgHeight + 'px');
+		genc.style.width = String(imgWidth + 'px');
+
+		genctx.drawImage(img, 0, 0);
+		var imgData = genctx.getImageData(0, 0, genc.width, genc.height);
+
+		for (var i = 0; i < imgData.data.length; i += 4) {
+				if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+						map.tileMapTextures.push(Math.floor(Math.random() * 3) + 1);
+				} else {
+						map.tileMapTextures.push(0);
+				}
+		}
 
 		renderParameters.pause = false;
 
 	},
 	render: function() {
-		for (var i = 0; i <= map.tileMap.length; i = i + 1) {
+		for (var i = 0; i <= map.tileMapTextures.length; i = i + 1) {
 			ctx.beginPath();
       ctx.fillStyle = '#47048a';
 
-			if (i % map.tileMapWidth * map.tileWidth - player.x > -(renderParameters.windowWidth + map.tileWidth) && i % map.tileMapWidth * map.tileWidth - player.x < renderParameters.windowWidth && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset > -renderParameters.windowHeight && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset < renderParameters.windowHeight * 2) {
+			// if (i % map.tileMapWidth * map.tileWidth - player.x > -(renderParameters.windowWidth + map.tileWidth) && i % map.tileMapWidth * map.tileWidth - player.x < renderParameters.windowWidth && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset > -renderParameters.windowHeight && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset < renderParameters.windowHeight * 2) {
 
-				if (map.tileMap[i] != 0) {
-					if (map.tileMap[i] == 1) {
-						ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
-						ctx.closePath();
-					}
-					if (map.tileMap[i] == 2) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 3) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 4) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 5) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 10) {
+				// if (map.tileMap[i] != 0) {
+				// 	if (map.tileMap[i] == 1) {
+				// 		ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
+				// 		ctx.closePath();
+				// 	}
+				// 	if (map.tileMap[i] == 2) {
+				// 		ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.closePath();
+				// 		ctx.fill();
+				// 	}
+				// 	if (map.tileMap[i] == 3) {
+				// 		ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.closePath();
+				// 		ctx.fill();
+				// 	}
+				// 	if (map.tileMap[i] == 4) {
+				// 		ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.closePath();
+				// 		ctx.fill();
+				// 	}
+				// 	if (map.tileMap[i] == 5) {
+				// 		ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
+				// 		ctx.closePath();
+				// 		ctx.fill();
+				// 	}
+				// 	if (map.tileMap[i] == 10) {
+				//
+				// 		ctx.fillStyle = '#FF0000'
+				//
+				// 		ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
+				// 		ctx.closePath();
+				// 	}
+				// }
 
-						ctx.fillStyle = '#FF0000'
+				if (map.tileMapTextures[i] > 0) {
 
-						ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
-						ctx.closePath();
-					}
+					var tile = map.tileMapTextures[i] - 1;
+
+					ctx.drawImage(mapTextureResources[tile], Math.round(((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.round((((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
 				}
 
+				ctx.closePath();
 			}
-		}
+		// }
 	}
 };
 
@@ -970,6 +1016,7 @@ var stageTransition = {
 			renderParameters.pause = false;
 
 			map.generateMap();
+			map.generateMapTextures();
 		}
 	},
 
@@ -1763,6 +1810,7 @@ function initializeObjects() {
 
 	}
 	map.generateMap();
+	map.generateMapTextures();
 
 	window.requestAnimationFrame(gameTick);
 	window.requestAnimationFrame(render);
