@@ -705,7 +705,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 0,
+	level: 2,
 	generateMap: function() {
 		map.tileMap = [];
 		enemies = [];
@@ -797,7 +797,18 @@ var map = {
 
 		for (var i = 0; i < imgData.data.length; i += 4) {
 				if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
-						map.tileMapTextures.push(Math.floor(Math.random() * 3) + 1);
+
+					//Solid Block
+					map.tileMapTextures.push(Math.floor(Math.random() * 2) + 1);
+
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 240 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+
+					if (imgData.data[i+3 - (map.tileMapWidth * 4)] == 0 || imgData.data[i - (map.tileMapWidth * 4)] == 240 || imgData.data[i - (map.tileMapWidth * 4)] == 210) {
+						map.tileMapTextures.push(4);
+					} else {
+						map.tileMapTextures.push(3);
+					}
+
 				} else {
 						map.tileMapTextures.push(0);
 				}
