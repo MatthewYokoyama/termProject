@@ -706,7 +706,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 2,
+	level: 0,
 	generateMap: function() {
 		map.tileMap = [];
 		enemies = [];
@@ -866,7 +866,7 @@ var map = {
 					(map.tileMapTexturesType[i + map.tileMapWidth] == 1 || map.tileMapTexturesType[i + map.tileMapWidth] == 2 || map.tileMapTexturesType[i + map.tileMapWidth] == 3) &&
 					(map.tileMapTexturesType[i - 1] == 0 || map.tileMapTexturesType[i - 1] == 2 || map.tileMapTexturesType[i - 1] == 4) &&
 					(map.tileMapTexturesType[i + 1] == 1 || map.tileMapTexturesType[i + 1] == 4) &&
-					(map.tileMapTexturesType[i + map.tileMapWidth + 1] == 1 || map.tileMapTexturesType[i - map.tileMapWidth + 1] == 2)
+					(map.tileMapTexturesType[i + map.tileMapWidth + 1] == 1 || map.tileMapTexturesType[i + map.tileMapWidth + 1] == 2)
 
 				) {
 					map.tileMapTextures.push(3);
@@ -876,10 +876,31 @@ var map = {
 					(map.tileMapTexturesType[i + map.tileMapWidth] == 1 || map.tileMapTexturesType[i + map.tileMapWidth] == 2 || map.tileMapTexturesType[i + map.tileMapWidth] == 3) &&
 					(map.tileMapTexturesType[i - 1] == 1 || map.tileMapTexturesType[i - 1] == 5) &&
 					(map.tileMapTexturesType[i + 1] == 0 || map.tileMapTexturesType[i + 1] == 3 || map.tileMapTexturesType[i + 1] == 5) &&
-					(map.tileMapTexturesType[i + map.tileMapWidth - 1] == 1 || map.tileMapTexturesType[i - map.tileMapWidth - 1] == 3)
+					(map.tileMapTexturesType[i + map.tileMapWidth - 1] == 1 || map.tileMapTexturesType[i + map.tileMapWidth - 1] == 3)
 
 				) {
 					map.tileMapTextures.push(5);
+				} else if (
+
+					(map.tileMapTexturesType[i - map.tileMapWidth] == 1 || map.tileMapTexturesType[i - map.tileMapWidth] == 4 || map.tileMapTexturesType[i - map.tileMapWidth] == 5) &&
+					(map.tileMapTexturesType[i + map.tileMapWidth] == 0 || map.tileMapTexturesType[i + map.tileMapWidth] == 4 || map.tileMapTexturesType[i + map.tileMapWidth] == 5) &&
+					(map.tileMapTexturesType[i - 1] == 0 || map.tileMapTexturesType[i - 1] == 2 || map.tileMapTexturesType[i - 1] == 4) &&
+					(map.tileMapTexturesType[i + 1] == 1 || map.tileMapTexturesType[i + 1] == 2 || map.tileMapTexturesType[i + 1] == 4) &&
+					(map.tileMapTexturesType[i - map.tileMapWidth + 1] == 1 || map.tileMapTexturesType[i - map.tileMapWidth + 1] == 4)
+
+				) {
+					map.tileMapTextures.push(8);
+				} else if (
+
+					(map.tileMapTexturesType[i - map.tileMapWidth] == 1 || map.tileMapTexturesType[i - map.tileMapWidth] == 4 || map.tileMapTexturesType[i - map.tileMapWidth] == 5) &&
+					(map.tileMapTexturesType[i + map.tileMapWidth] == 0 || map.tileMapTexturesType[i + map.tileMapWidth] == 4 || map.tileMapTexturesType[i + map.tileMapWidth] == 5) &&
+					(map.tileMapTexturesType[i - 1] == 1 || map.tileMapTexturesType[i - 1] == 5) &&
+					(map.tileMapTexturesType[i + 1] == 0 || map.tileMapTexturesType[i + 1] == 3 || map.tileMapTexturesType[i + 1] == 5)
+					&&
+					(map.tileMapTexturesType[i - map.tileMapWidth - 1] == 1 || map.tileMapTexturesType[i - map.tileMapWidth - 1] == 5)
+
+				) {
+					map.tileMapTextures.push(10);
 				} else {
 					map.tileMapTextures.push(1);
 				}
