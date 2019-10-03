@@ -65,7 +65,7 @@ for (var i = 0; i < 4; ++i) {
 
 var mapTextureResources = [];
 
-for (var i = 0; i < 4; ++i) {
+for (var i = 0; i < 22; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/environment/tiles/' + i + '.png';
 
@@ -705,7 +705,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 0,
+	level: 2,
 	generateMap: function() {
 		map.tileMap = [];
 		enemies = [];
@@ -798,10 +798,78 @@ var map = {
 		for (var i = 0; i < imgData.data.length; i += 4) {
 				if (imgData.data[i + 3] == 255 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 
-					if (imgData.data[i + 3 - map.tileMapWidth * 4] == 0) {
+					if (
 
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 0 || imgData.data[i - map.tileMapWidth * 4] == 210 || imgData.data[i - map.tileMapWidth * 4] == 240) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 255 || imgData.data[i + map.tileMapWidth * 4] == 210 || imgData.data[i + map.tileMapWidth * 4] == 240) &&
+						(imgData.data[i + 3 - 4] == 255 || imgData.data[i - 4] == 240 || imgData.data[i - 4] == 180) &&
+						(imgData.data[i + 3 + 4] == 255 || imgData.data[i + 4] == 210 || imgData.data[i + 4] == 150)
+
+					) {
 						map.tileMapTextures.push(4);
+					} else if (
 
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 255 || imgData.data[i - map.tileMapWidth * 4] == 180 || imgData.data[i - map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 0 || imgData.data[i + map.tileMapWidth * 4] == 180 || imgData.data[i + map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 - 4] == 255 || imgData.data[i - 4] == 240 || imgData.data[i - 4] == 180) &&
+						(imgData.data[i + 3 + 4] == 255 || imgData.data[i + 4] == 210 || imgData.data[i + 4] == 150)
+
+					) {
+						map.tileMapTextures.push(9);
+					} else if (
+
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 255 || imgData.data[i - map.tileMapWidth * 4] == 180 || imgData.data[i - map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 255 || imgData.data[i + map.tileMapWidth * 4] == 240 || imgData.data[i + map.tileMapWidth * 4] == 210) &&
+						(imgData.data[i + 3 - 4] == 0 || imgData.data[i - 4] == 240 || imgData.data[i - 4] == 180) &&
+						(imgData.data[i + 3 + 4] == 255 || imgData.data[i + 4] == 240 || imgData.data[i + 4] == 180)
+
+					) {
+						map.tileMapTextures.push(6);
+					} else if (
+
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 255 || imgData.data[i - map.tileMapWidth * 4] == 180 || imgData.data[i - map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 255 || imgData.data[i + map.tileMapWidth * 4] == 240 || imgData.data[i + map.tileMapWidth * 4] == 210) &&
+						(imgData.data[i + 3 - 4] == 255 || imgData.data[i - 4] == 210 || imgData.data[i - 4] == 150) &&
+						(imgData.data[i + 3 + 4] == 0 || imgData.data[i + 4] == 210 || imgData.data[i + 4] == 150)
+
+					) {
+						map.tileMapTextures.push(7);
+					} else if (
+
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 0 || imgData.data[i - map.tileMapWidth * 4] == 240 || imgData.data[i - map.tileMapWidth * 4] == 210) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 255 || imgData.data[i + map.tileMapWidth * 4] == 240 || imgData.data[i + map.tileMapWidth * 4] == 210) &&
+						(imgData.data[i + 3 - 4] == 0 || imgData.data[i - 4] == 240 || imgData.data[i - 4] == 180) &&
+						(imgData.data[i + 3 + 4] == 255 || imgData.data[i + 4] == 240 || imgData.data[i + 4] == 180)
+
+					) {
+						map.tileMapTextures.push(3);
+					} else if (
+
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 0 || imgData.data[i - map.tileMapWidth * 4] == 240 || imgData.data[i - map.tileMapWidth * 4] == 210) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 255 || imgData.data[i + map.tileMapWidth * 4] == 240 || imgData.data[i + map.tileMapWidth * 4] == 210) &&
+						(imgData.data[i + 3 - 4] == 255 || imgData.data[i - 4] == 210 || imgData.data[i - 4] == 150) &&
+						(imgData.data[i + 3 + 4] == 0 || imgData.data[i + 4] == 210 || imgData.data[i + 4] == 150)
+
+					) {
+						map.tileMapTextures.push(5);
+					} else if (
+
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 255 || imgData.data[i - map.tileMapWidth * 4] == 180 || imgData.data[i - map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 0 || imgData.data[i + map.tileMapWidth * 4] == 180 || imgData.data[i + map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 - 4] == 0 || imgData.data[i - 4] == 240 || imgData.data[i - 4] == 180) &&
+						(imgData.data[i + 3 + 4] == 255 || imgData.data[i + 4] == 240 || imgData.data[i + 4] == 180)
+
+					) {
+						map.tileMapTextures.push(8);
+					} else if (
+
+						(imgData.data[i + 3 - map.tileMapWidth * 4] == 255 || imgData.data[i - map.tileMapWidth * 4] == 180 || imgData.data[i - map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 + map.tileMapWidth * 4] == 0 || imgData.data[i + map.tileMapWidth * 4] == 180 || imgData.data[i + map.tileMapWidth * 4] == 150) &&
+						(imgData.data[i + 3 - 4] == 255 || imgData.data[i - 4] == 210 || imgData.data[i - 4] == 150) &&
+						(imgData.data[i + 3 + 4] == 0 || imgData.data[i + 4] == 210 || imgData.data[i + 4] == 150)
+
+					) {
+						map.tileMapTextures.push(10);
 					} else {
 						map.tileMapTextures.push(Math.floor(Math.random() * 2) + 1);
 					}
