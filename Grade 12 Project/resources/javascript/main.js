@@ -65,7 +65,7 @@ for (var i = 0; i < 4; ++i) {
 
 var mapTextureResources = [];
 
-for (var i = 0; i < 35; ++i) {
+for (var i = 0; i < 48; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/environment/tiles/' + i + '.png';
 
@@ -180,6 +180,8 @@ var player = {
 	jumpHeight: 15,
 	jumpTapRight: false,
 	jumpTapLeft: false,
+	jumpTime: 8,
+	jumpTicker: 0,
 	collision: false,
 	health: 100,
 	attackDamage: 10,
@@ -194,9 +196,11 @@ var player = {
 
 		//yVelocity calculations
 		if (keystrokelistener.w === true || keystrokelistener.space === true) {
-			if (player.jump === false) {
+			if (player.jump === false || player.jumpTicker > 0) {
 				player.yVelocity = -player.jumpHeight;
 				player.jump = true;
+
+				player.jumpTicker = 0;
 			}
 		}
 
@@ -349,11 +353,12 @@ var player = {
 			player.y = player.y + 1;
 			player.jumpWall = false;
 
-			if (player.collisionCheck() === true) {
-				player.y = player.y - 1;
-			} else {
+			if (player.collisionCheck() === false) {
 				player.jump = true;
+				player.jumpTicker = player.jumpTime;
 			}
+
+			player.y = player.y - 1;
 
 			player.jumpTapRight = false;
 			player.jumpTapLeft = false;
@@ -362,6 +367,11 @@ var player = {
 		//Handle jump
 		if (player.jump === true) {
 			player.yVelocity = player.yVelocity + physicsParameters.gravity;
+
+			if (player.jumpTicker > 0) {
+				player.jumpTicker = player.jumpTicker - 1;
+			}
+
 
 			for (var i = 0; i <= Math.round(Math.abs(player.yVelocity)); i = i + 1) {
 				if (player.yVelocity > 0) {
@@ -1334,6 +1344,271 @@ var map = {
 
 			) {
 				map.tileMapTexture.push(31);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5 || map.tileMapTextureID[4] == 3) &&
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5 || map.tileMapTextureID[6] == 2)
+
+			) {
+				map.tileMapTexture.push(32);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5 || map.tileMapTextureID[6] == 4)
+
+			) {
+				map.tileMapTexture.push(33);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5 || map.tileMapTextureID[2] == 4) &&
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5 || map.tileMapTextureID[8] == 2)
+
+			) {
+				map.tileMapTexture.push(34);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
+
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5 || map.tileMapTextureID[8] == 3)
+
+			) {
+				map.tileMapTexture.push(35);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5) &&
+				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
+
+			) {
+				map.tileMapTexture.push(36);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 3) &&
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5)
+
+			) {
+				map.tileMapTexture.push(37);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4) &&
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+
+			) {
+				map.tileMapTexture.push(38);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
+
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4) &&
+				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3)
+
+			) {
+				map.tileMapTexture.push(39);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3) &&
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+
+			) {
+				map.tileMapTexture.push(40);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4) &&
+				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4)
+
+			) {
+				map.tileMapTexture.push(41);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5) &&
+				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
+
+			) {
+				map.tileMapTexture.push(42);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
+
+				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5) &&
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5)
+
+			) {
+				map.tileMapTexture.push(43);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 4) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+
+			) {
+				map.tileMapTexture.push(44);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 4) &&
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
+
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5)
+
+			) {
+				map.tileMapTexture.push(45);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5)
+
+			) {
+				map.tileMapTexture.push(46);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
+
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4)
+
+			) {
+				map.tileMapTexture.push(47);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 1 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3) &&
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5)
+
+			) {
+				map.tileMapTexture.push(48);
 			} else {
 				map.tileMapTexture.push(0);
 			}
