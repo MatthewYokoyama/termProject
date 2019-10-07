@@ -29,7 +29,7 @@ for (var i = 0; i < 1; ++i) {
 
 var playerResources = [];
 
-for (var i = 0; i < 6; ++i) {
+for (var i = 0; i < 14; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/player/playerSprites/' + i + '.png';
 
@@ -65,7 +65,7 @@ for (var i = 0; i < 4; ++i) {
 
 var mapTextureResources = [];
 
-for (var i = 0; i < 48; ++i) {
+for (var i = 0; i < 68; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/environment/tiles/' + i + '.png';
 
@@ -79,6 +79,15 @@ for (var i = 0; i < 1; ++i) {
 	img.src = 'resources/assets/textures/environment/' + i + '.png';
 
 	sceneryResources.push(img);
+}
+
+var backlayerResources = [];
+
+for (var i = 0; i < 3; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/environment/backlayer/' + i + '.png';
+
+	backlayerResources.push(img);
 }
 
 var backdropResources = [];
@@ -172,7 +181,7 @@ var player = {
 	xVelocity: 0,
 	yVelocity: 0,
 	xAcceleration: 0.7,
-	xVelocityMax: 12,
+	xVelocityMax: 13,
 	slope: 0,
 	slopeMax: 3,
 	jump: false,
@@ -616,7 +625,13 @@ var player = {
 
 		if (player.direction === 0) {
 			if (player.jump === false) {
-				player.state = 0;
+
+				if (Math.abs(player.xVelocity) > 1) {
+					player.state = 6;
+				} else {
+					player.state = 0;
+				}
+
 			}
 			if (player.jump === true) {
 				//Test for wall slide
@@ -641,7 +656,13 @@ var player = {
 
 		if (player.direction === 1) {
 			if (player.jump === false) {
-				player.state = 1;
+
+				if (Math.abs(player.xVelocity) > 1) {
+					player.state = 7;
+				} else {
+					player.state = 1;
+				}
+
 			}
 			if (player.jump === true) {
 				//Test for wall slide
@@ -665,6 +686,7 @@ var player = {
 	},
 	animate: function() {
 
+
 	},
 	render: function() {
 		ctx.beginPath();
@@ -686,6 +708,12 @@ var player = {
 		}
 		if (player.state == 5) {
 			ctx.drawImage(playerResources[5], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		}
+		if (player.state == 6) {
+			ctx.drawImage(playerResources[Math.round(loopTime / 8) % 8 + 6], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		}
+		if (player.state == 7) {
+			ctx.drawImage(playerResources[1], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 		}
 
 
@@ -716,7 +744,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 2,
+	level: 0,
 	generateMap: function() {
 		map.tileMap = [];
 		enemies = [];
@@ -741,13 +769,13 @@ var map = {
 		for (var i = 0; i < imgData.data.length; i += 4) {
 				if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 						map.tileMap.push(1);
-				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 0 && imgData.data[i] <= 60 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 150 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 						map.tileMap.push(2);
-				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 60 && imgData.data[i] <= 120 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 180 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 						map.tileMap.push(3);
-				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 120 && imgData.data[i] <= 180 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 210 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 						map.tileMap.push(4);
-				} else if (imgData.data[i+3] > 0 && imgData.data[i] > 180 && imgData.data[i] <= 240 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
+				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 240 && imgData.data[i + 1] == 0 && imgData.data[i + 2] == 0) {
 						map.tileMap.push(5);
 				} else if (imgData.data[i+3] > 0 && imgData.data[i] == 0 && imgData.data[i + 1] > 120 && imgData.data[i + 1] <= 180 && imgData.data[i + 2] == 0) {
 						map.tileMap.push(6);
@@ -824,23 +852,21 @@ var map = {
 				}
 		}
 
+		//Update backlayer texture size
+		scenery1.getLevelData();
+
 		for (var i = 0; i < map.tileMapTextureType.length; i = i + 1) {
 			map.tileMapTextureID = [];
 
 			if (map.tileMapTextureType[i] == 0) {
 				map.tileMapTextureID.push('0');
 			} else {
-				map.tileMapTextureID.push((map.tileMapTextureType[i] - map.tileMapTextureType[i] % 5) / 5 + 1);
+				map.tileMapTextureID.push(((map.tileMapTextureType[i] - 1) - (map.tileMapTextureType[i] - 1) % 5) / 5 + 1);
 			}
 
 			for (var n = 0; n < 9; n = n + 1) {
 
-				if (((map.tileMapTextureType[i] - map.tileMapTextureType[i] % 5) / 5) == ((map.tileMapTextureType[i + ((n % 3) - 1) + (map.tileMapWidth * ((n - n % 3) / 3 - 1))] % 5 - map.tileMapTextureType[i + ((n % 3) - 1) + (map.tileMapWidth * ((n - n % 3) / 3 - 1))] % 5) / 5) % 5) {
-					map.tileMapTextureID.push((map.tileMapTextureType[i + ((n % 3) - 1) + (map.tileMapWidth * ((n - n % 3) / 3 - 1))] - 1) % 5 + 1 || 0);
-
-				} else {
-					map.tileMapTextureID.push(0);
-				}
+				map.tileMapTextureID.push((map.tileMapTextureType[i + ((n % 3) - 1) + (map.tileMapWidth * ((n - n % 3) / 3 - 1))]) || 0);
 
 			}
 
@@ -861,7 +887,7 @@ var map = {
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
 
 			) {
-				map.tileMapTexture.push(1);
+				map.tileMapTexture.push(Math.floor(Math.random() * 2) + 1);
 			} else if (
 
 				map.tileMapTextureID[0] == 1 &&
@@ -1016,7 +1042,7 @@ var map = {
 				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
 				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
 
-				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 3 || map.tileMapTextureID[2] == 5)
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5)
 
 			) {
 				map.tileMapTexture.push(12);
@@ -1085,7 +1111,7 @@ var map = {
 				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[6] == 1) &&
 
-				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2) &&
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4) &&
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2) &&
 				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4) &&
 				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3)
@@ -1103,7 +1129,7 @@ var map = {
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 4) &&
 				(map.tileMapTextureID[4] == 1) &&
 
-				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 3) &&
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5) &&
 				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3) &&
 				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5) &&
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
@@ -1121,7 +1147,7 @@ var map = {
 				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3) &&
 				(map.tileMapTextureID[6] == 1) &&
 
-				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 4) &&
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5) &&
 				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4) &&
 				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5) &&
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
@@ -1139,7 +1165,7 @@ var map = {
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2) &&
 				(map.tileMapTextureID[4] == 1) &&
 
-				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 5) &&
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5) &&
 				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5) &&
 				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[1] == 3) &&
 				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[9] == 4)
@@ -1157,8 +1183,8 @@ var map = {
 				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 4) &&
 
-				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4) &&
-				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5) &&
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
 				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 2) &&
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
 
@@ -1177,8 +1203,8 @@ var map = {
 
 				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5) &&
 				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4) &&
-				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5) &&
-				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3)
 
 			) {
 				map.tileMapTexture.push(22);
@@ -1193,9 +1219,9 @@ var map = {
 				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
 				(map.tileMapTextureID[6] == 1) &&
 
-				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4) &&
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4) &&
-				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5) &&
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
 
 			) {
@@ -1212,9 +1238,9 @@ var map = {
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 
 				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5) &&
-				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5) &&
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3) &&
-				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4)
 
 			) {
 				map.tileMapTexture.push(24);
@@ -1419,7 +1445,7 @@ var map = {
 				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 
-				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5) &&
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5 || map.tileMapTextureID[4] == 3) &&
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
 
 			) {
@@ -1436,7 +1462,7 @@ var map = {
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 
 				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 3) &&
-				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5)
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5 || map.tileMapTextureID[6] == 4)
 
 			) {
 				map.tileMapTexture.push(37);
@@ -1452,7 +1478,7 @@ var map = {
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 
 				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4) &&
-				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5 || map.tileMapTextureID[8] == 2)
 
 			) {
 				map.tileMapTexture.push(38);
@@ -1467,7 +1493,7 @@ var map = {
 				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
 
-				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4) &&
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4 || map.tileMapTextureID[2] == 5) &&
 				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3)
 
 			) {
@@ -1484,7 +1510,7 @@ var map = {
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 
 				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3) &&
-				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5 || map.tileMapTextureID[6] == 2)
 
 			) {
 				map.tileMapTexture.push(40);
@@ -1499,7 +1525,7 @@ var map = {
 				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 
-				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4) &&
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[1] == 3 || map.tileMapTextureID[1] == 4 || map.tileMapTextureID[4] == 5) &&
 				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4)
 
 			) {
@@ -1515,7 +1541,7 @@ var map = {
 				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
 				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
 
-				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5) &&
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[3] == 3 || map.tileMapTextureID[3] == 5 || map.tileMapTextureID[2] == 4) &&
 				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
 
 			) {
@@ -1532,7 +1558,7 @@ var map = {
 				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5) &&
 
 				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5) &&
-				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5)
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5 || map.tileMapTextureID[8] == 3)
 
 			) {
 				map.tileMapTexture.push(43);
@@ -1609,6 +1635,242 @@ var map = {
 
 			) {
 				map.tileMapTexture.push(48);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 5 &&
+
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[9] == 1 || map.tileMapTextureID[9] == 2)
+
+			) {
+				map.tileMapTexture.push(49);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 4 &&
+
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 5) &&
+
+				(map.tileMapTextureID[7] == 1 || map.tileMapTextureID[7] == 3)
+
+			) {
+				map.tileMapTexture.push(50);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 3 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 5) &&
+
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2) &&
+
+				(map.tileMapTextureID[3] == 1 || map.tileMapTextureID[3] == 4)
+
+			) {
+				map.tileMapTexture.push(51);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 2 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3) &&
+
+				(map.tileMapTextureID[1] == 1 || map.tileMapTextureID[1] == 5)
+
+			) {
+				map.tileMapTexture.push(52);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 5 &&
+
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 4 || map.tileMapTextureID[6] == 2)
+
+			) {
+				map.tileMapTexture.push(53);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 4 &&
+
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4)
+
+			) {
+				map.tileMapTexture.push(54);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 3 &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5)
+
+			) {
+				map.tileMapTexture.push(55);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 2 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3) &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5)
+
+			) {
+				map.tileMapTexture.push(56);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 5 &&
+
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[2] == 5) &&
+
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3)
+
+			) {
+				map.tileMapTexture.push(57);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 4 &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5)
+
+			) {
+				map.tileMapTexture.push(58);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 3 &&
+
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3)
+
+			) {
+				map.tileMapTexture.push(59);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 2 &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5)
+
+			) {
+				map.tileMapTexture.push(60);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 5 &&
+
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4) &&
+
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[9] == 0 || map.tileMapTextureID[9] == 3 || map.tileMapTextureID[9] == 4 || map.tileMapTextureID[9] == 5)
+
+			) {
+				map.tileMapTexture.push(61);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 4 &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+
+				(map.tileMapTextureID[8] == 1 || map.tileMapTextureID[8] == 2 || map.tileMapTextureID[8] == 3) &&
+
+				(map.tileMapTextureID[7] == 0 || map.tileMapTextureID[7] == 2 || map.tileMapTextureID[7] == 4 || map.tileMapTextureID[7] == 5)
+
+			) {
+				map.tileMapTexture.push(62);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 3 &&
+
+				(map.tileMapTextureID[6] == 1 || map.tileMapTextureID[6] == 2 || map.tileMapTextureID[6] == 4) &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+
+				(map.tileMapTextureID[3] == 0 || map.tileMapTextureID[3] == 2 || map.tileMapTextureID[7] == 3 || map.tileMapTextureID[7] == 5)
+
+			) {
+				map.tileMapTexture.push(63);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 2 &&
+
+				(map.tileMapTextureID[4] == 1 || map.tileMapTextureID[4] == 3 || map.tileMapTextureID[4] == 5) &&
+
+				(map.tileMapTextureID[2] == 1 || map.tileMapTextureID[2] == 4 || map.tileMapTextureID[2] == 5) &&
+
+				(map.tileMapTextureID[1] == 0 || map.tileMapTextureID[1] == 2 || map.tileMapTextureID[7] == 3 || map.tileMapTextureID[7] == 4)
+
+			) {
+				map.tileMapTexture.push(64);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 5 &&
+
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5)
+
+			) {
+				map.tileMapTexture.push(65);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 4 &&
+
+				(map.tileMapTextureID[8] == 0 || map.tileMapTextureID[8] == 4 || map.tileMapTextureID[8] == 5) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4)
+
+			) {
+				map.tileMapTexture.push(66);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 3 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3) &&
+
+				(map.tileMapTextureID[6] == 0 || map.tileMapTextureID[6] == 3 || map.tileMapTextureID[6] == 5)
+
+			) {
+				map.tileMapTexture.push(67);
+			} else if (
+
+				map.tileMapTextureID[0] == 1 &&
+				map.tileMapTextureID[5] == 2 &&
+
+				(map.tileMapTextureID[2] == 0 || map.tileMapTextureID[2] == 2 || map.tileMapTextureID[2] == 3) &&
+
+				(map.tileMapTextureID[4] == 0 || map.tileMapTextureID[4] == 2 || map.tileMapTextureID[4] == 4)
+
+			) {
+				map.tileMapTexture.push(68);
 			} else {
 				map.tileMapTexture.push(0);
 			}
@@ -1622,51 +1884,12 @@ var map = {
 
 	},
 	render: function() {
+
+		ctx.beginPath();
+
 		for (var i = 0; i <= map.tileMapTexture.length; i = i + 1) {
-			ctx.beginPath();
-      ctx.fillStyle = '#0000FF';
 
 			if (i % map.tileMapWidth * map.tileWidth - player.x > -(renderParameters.windowWidth + map.tileWidth) && i % map.tileMapWidth * map.tileWidth - player.x < renderParameters.windowWidth && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset > -renderParameters.windowHeight && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset < renderParameters.windowHeight * 2) {
-
-				if (map.tileMap[i] != 0) {
-					// if (map.tileMap[i] == 1) {
-					// 	ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
-					// 	ctx.closePath();
-					// }
-					if (map.tileMap[i] == 2) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 3) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 4) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 5) {
-						ctx.moveTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.lineTo((i % map.tileMapWidth * map.tileWidth - player.x + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)
-						ctx.closePath();
-						ctx.fill();
-					}
-					if (map.tileMap[i] == 10) {
-
-						ctx.fillRect((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
-						ctx.closePath();
-					}
-				}
 
 				if (map.tileMapTexture[i] > 0) {
 
@@ -1674,10 +1897,19 @@ var map = {
 
 					ctx.drawImage(mapTextureResources[tile], Math.round(((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.round((((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
 				}
-
-				ctx.closePath();
 			}
 		}
+
+		ctx.fillStyle = '#150a23';
+
+		ctx.fillRect(Math.round(((-player.x + scenery1.width * map.tileWidth - map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.round(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+
+		ctx.fillRect(Math.round(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round(((-player.y - scenery1.height * map.tileHeight + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.round(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round(((-player.y + scenery1.height * map.tileHeight - map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+
+		ctx.closePath();
+
 	}
 };
 
@@ -1856,9 +2088,28 @@ var scenery0 = {
 }
 
 var scenery1 = {
+	width: document.getElementById(map.level).width,
+	height: document.getElementById(map.level).height,
+
+	getLevelData: function() {
+		scenery1.width = document.getElementById(map.level).width;
+		scenery1.height = document.getElementById(map.level).height;
+	},
+
 	render: function() {
 		ctx.beginPath();
-		ctx.drawImage(sceneryResources[0], 0, 0, canvas.width, canvas.height);
+		ctx.drawImage(backlayerResources[map.level], Math.round((-player.x * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.round((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, Math.round(scenery1.width * map.tileWidth * renderParameters.xScale / 2) * 2, Math.round(scenery1.height * map.tileHeight * renderParameters.yScale / 2) * 2);
+
+		ctx.closePath();
+	}
+}
+
+var scenery2 = {
+	render: function() {
+		ctx.beginPath();
+
+		//ctx.drawImage(sceneryResources[0], 0, 0, canvas.width, canvas.height);
+
 		ctx.closePath();
 	}
 }
@@ -2769,8 +3020,12 @@ function render() {
 	'use strict';
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
 	scenery0.render();
+	scenery1.render();
+
 	map.render();
+
 	renderLine(renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset, renderParameters.windowHeight + (player.height / 3 * renderParameters.yScale) + renderParameters.yOffset, cursorParameters.x * 2, cursorParameters.y * 2);
 	player.render();
 
@@ -2793,7 +3048,7 @@ function render() {
 
 
 	//Viginette
-	scenery1.render();
+	scenery2.render();
 
 	userInterface.render();
 
