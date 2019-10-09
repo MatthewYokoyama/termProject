@@ -744,7 +744,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 0,
+	level: 2,
 	generateMap: function() {
 		map.tileMap = [];
 		enemies = [];
