@@ -27,22 +27,13 @@ for (var i = 0; i < 1; ++i) {
 	abilitySounds.push(sfx);
 }
 
-var playerUpperResources = [];
+var playerResources = [];
 
-for (var i = 0; i < 0; ++i) {
+for (var i = 0; i < 2; ++i) {
 	img = new Image();
-	img.src = 'resources/assets/textures/player/playerSprites/upper/' + i + '.png';
+	img.src = 'resources/assets/textures/player/playerSprites/' + i + '.png';
 
-	playerUpperResources.push(img);
-}
-
-var playerLowerResources = [];
-
-for (var i = 0; i < 26; ++i) {
-	img = new Image();
-	img.src = 'resources/assets/textures/player/playerSprites/lower/' + i + '.png';
-
-	playerLowerResources.push(img);
+	playerResources.push(img);
 }
 
 var abilityResources = [];
@@ -703,8 +694,9 @@ var player = {
 	render: function() {
 		ctx.beginPath();
 
-		ctx.drawImage(playerLowerResources[0], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		ctx.drawImage(playerResources[1], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
+		ctx.drawImage(playerResources[0], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
 		// if (player.state == 0) {
 		// 	ctx.drawImage(playerLowerResources[0], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
@@ -759,7 +751,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 2,
+	level: 0,
 	generateMap: function() {
 		map.tileMap = [];
 		enemies = [];
