@@ -27,13 +27,22 @@ for (var i = 0; i < 1; ++i) {
 	abilitySounds.push(sfx);
 }
 
-var playerResources = [];
+var playerUpperResources = [];
 
-for (var i = 0; i < 14; ++i) {
+for (var i = 0; i < 0; ++i) {
 	img = new Image();
-	img.src = 'resources/assets/textures/player/playerSprites/' + i + '.png';
+	img.src = 'resources/assets/textures/player/playerSprites/upper/' + i + '.png';
 
-	playerResources.push(img);
+	playerUpperResources.push(img);
+}
+
+var playerLowerResources = [];
+
+for (var i = 0; i < 26; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/player/playerSprites/lower/' + i + '.png';
+
+	playerLowerResources.push(img);
 }
 
 var abilityResources = [];
@@ -627,7 +636,7 @@ var player = {
 			if (player.jump === false) {
 
 				if (Math.abs(player.xVelocity) > 1) {
-					player.state = 6;
+					player.state = 2;
 				} else {
 					player.state = 0;
 				}
@@ -639,7 +648,7 @@ var player = {
 				player.x = player.x + 1;
 
 				if (player.collisionCheck() === true && keystrokelistener.d === true && player.yVelocity > 1) {
-					player.state = 2;
+					player.state = 6;
 				} else {
 
 					player.state = 0;
@@ -658,7 +667,7 @@ var player = {
 			if (player.jump === false) {
 
 				if (Math.abs(player.xVelocity) > 1) {
-					player.state = 7;
+					player.state = 3;
 				} else {
 					player.state = 1;
 				}
@@ -670,7 +679,7 @@ var player = {
 				player.x = player.x - 1;
 
 				if (player.collisionCheck() === true && keystrokelistener.a === true && player.yVelocity > 1) {
-					player.state = 3;
+					player.state = 7;
 				} else {
 					player.state = 1;
 
@@ -684,37 +693,43 @@ var player = {
 			}
 		}
 	},
-	animate: function() {
 
+	animationFrames: [1, 1, 12, 12, 1, 1, 1, 1],
+	animationRate: [1, 1, 8, 8, 1, 1, 1, 1],
+
+	animate: function() {
 
 	},
 	render: function() {
 		ctx.beginPath();
 
-		if (player.state == 0) {
-			ctx.drawImage(playerResources[0], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
-		if (player.state == 1) {
-			ctx.drawImage(playerResources[1], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
-		if (player.state == 2) {
-			ctx.drawImage(playerResources[2], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
-		if (player.state == 3) {
-			ctx.drawImage(playerResources[3], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
-		if (player.state == 4) {
-			ctx.drawImage(playerResources[4], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
-		if (player.state == 5) {
-			ctx.drawImage(playerResources[5], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
-		if (player.state == 6) {
-			ctx.drawImage(playerResources[Math.round(loopTime / 8) % 8 + 6], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
-		if (player.state == 7) {
-			ctx.drawImage(playerResources[1], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		}
+		ctx.drawImage(playerLowerResources[0], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+
+
+		// if (player.state == 0) {
+		// 	ctx.drawImage(playerLowerResources[0], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
+		// if (player.state == 1) {
+		// 	ctx.drawImage(playerLowerResources[1], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
+		// if (player.state == 2) {
+		// 	ctx.drawImage(playerLowerResources[2], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
+		// if (player.state == 3) {
+		// 	ctx.drawImage(playerLowerResources[3], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
+		// if (player.state == 4) {
+		// 	ctx.drawImage(playerLowerResources[4], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
+		// if (player.state == 5) {
+		// 	ctx.drawImage(playerLowerResources[5], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
+		// if (player.state == 6) {
+		// 	ctx.drawImage(playerLowerResources[Math.round(loopTime / 8) % 12 + 2], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
+		// if (player.state == 7) {
+		// 	ctx.drawImage(playerLowerResources[Math.round(loopTime / 8) % 12 + 14], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		// }
 
 
 		if (player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) {
