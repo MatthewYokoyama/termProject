@@ -694,9 +694,10 @@ var player = {
 	render: function() {
 		ctx.beginPath();
 
+		ctx.drawImage(playerResources[0], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+
 		ctx.drawImage(playerResources[1], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
-		ctx.drawImage(playerResources[0], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
 		// if (player.state == 0) {
 		// 	ctx.drawImage(playerLowerResources[0], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
