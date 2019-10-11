@@ -195,8 +195,6 @@ var player = {
 	health: 100,
 	attackDamage: 10,
 	damageToPlayer: [],
-	direction: 0,
-	state: 0,
 
 	//player functions
 	move: function() {
@@ -621,8 +619,18 @@ var player = {
 		}
 		player.damageToPlayer = [];
 	},
-	determineState: function() {
 
+	direction: 0,
+	state: 0,
+
+	jumpLaunch: false,
+
+	animationFrames: [1, 1, 12, 12, 1, 1, 1, 1],
+	animationRate: [1, 1, 8, 8, 1, 1, 1, 1],
+
+	animationFrame: 0,
+
+	animate: function() {
 		if (player.direction === 0) {
 			if (player.jump === false) {
 
@@ -634,19 +642,14 @@ var player = {
 
 			}
 			if (player.jump === true) {
+				player.state = 4;
+
 				//Test for wall slide
 
 				player.x = player.x + 1;
 
 				if (player.collisionCheck() === true && keystrokelistener.d === true && player.yVelocity > 1) {
 					player.state = 6;
-				} else {
-
-					player.state = 0;
-
-					if (player.yVelocity > 20) {
-						player.state = 4;
-					}
 				}
 
 				player.x = player.x - 1;
@@ -665,65 +668,55 @@ var player = {
 
 			}
 			if (player.jump === true) {
+
+				player.state = 5;
+
 				//Test for wall slide
 
 				player.x = player.x - 1;
 
 				if (player.collisionCheck() === true && keystrokelistener.a === true && player.yVelocity > 1) {
 					player.state = 7;
-				} else {
-					player.state = 1;
-
-					if  (player.yVelocity > 20) {
-						player.state = 5;
-					}
 				}
 
 				player.x = player.x + 1;
 
 			}
 		}
-	},
 
-	animationFrames: [1, 1, 12, 12, 1, 1, 1, 1],
-	animationRate: [1, 1, 8, 8, 1, 1, 1, 1],
+		if ((player.state >= 0 && player.state <= 3) || (player.state >= 6 && player.state <= 7)) {
 
-	animate: function() {
+			player.animationFrame = (Math.round(loopTime / player.animationRate[player.state]) % player.animationFrames[player.state]);
+
+		} else if (player.state >= 4 && player.state <= 5) {
+
+			if (player.yVelocity < 0) {
+
+				player.animationFrame = 1;
+
+			} else if (player.yVelocity > 0 && player.yVelocity <= Math.round(player.jumpHeight / 2)) {
+
+				player.animationFrame = 2;
+
+			} else if (player.yVelocity > 0 && player.yVelocity > Math.round(player.jumpHeight / 2)) {
+
+				player.animationFrame = 3;
+
+			} else {
+
+				player.animationFrame = 0;
+
+			}
+
+		}
 
 	},
 	render: function() {
 		ctx.beginPath();
 
-		ctx.drawImage(playerResources[0], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
-		ctx.drawImage(playerResources[1], (Math.round(loopTime / 8) % player.animationFrames[player.state]) * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-
-
-		// if (player.state == 0) {
-		// 	ctx.drawImage(playerLowerResources[0], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-		// if (player.state == 1) {
-		// 	ctx.drawImage(playerLowerResources[1], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-		// if (player.state == 2) {
-		// 	ctx.drawImage(playerLowerResources[2], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-		// if (player.state == 3) {
-		// 	ctx.drawImage(playerLowerResources[3], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-		// if (player.state == 4) {
-		// 	ctx.drawImage(playerLowerResources[4], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-		// if (player.state == 5) {
-		// 	ctx.drawImage(playerLowerResources[5], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-		// if (player.state == 6) {
-		// 	ctx.drawImage(playerLowerResources[Math.round(loopTime / 8) % 12 + 2], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-		// if (player.state == 7) {
-		// 	ctx.drawImage(playerLowerResources[Math.round(loopTime / 8) % 12 + 14], renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-		// }
-
+		ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
 		if (player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) {
 			ctx.arc(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range, 0, 2 * Math.PI);
@@ -2953,7 +2946,6 @@ function mainLoop() {
 
 		player.takeDamage();
 
-		player.determineState();
 		player.animate();
 
 
