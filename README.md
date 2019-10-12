@@ -1,2 +1,2 @@
 # termProject
-grade 12 project
+Grade 12 Project
