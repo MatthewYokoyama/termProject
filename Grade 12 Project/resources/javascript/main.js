@@ -29,7 +29,7 @@ for (var i = 0; i < 1; ++i) {
 
 var playerResources = [];
 
-for (var i = 0; i < 2; ++i) {
+for (var i = 0; i < 3; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/player/playerSprites/' + i + '.png';
 
@@ -146,12 +146,21 @@ var physicsParameters = {
 
 //Render variables
 var renderParameters = {
-	windowWidth: 1920,
-	windowHeight: 1080,
-	xOffset: 0,
-	yOffset: -40,
+	windowWidth: window.innerWidth,
+	windowHeight: window.innerHeight,
+
 	xScale: 1,
 	yScale: 1,
+
+	xOffset: 0,
+	yOffset: -40,
+	baseOffsetX: 0,
+	baseOffsetY: 2,
+	smoothFactorX: 1.2,
+	smoothFactorY: 1.2,
+	followFactorX: 0.1,
+	followFactorY: 0.4,
+
 	//Game loop frequency in (Hz)
 	gameSpeed: 120,
 	pause: false,
@@ -266,7 +275,6 @@ var player = {
 		for (var i = 0; i < Math.round(Math.abs(player.xVelocity)); i = i + 1) {
 			if (Math.round(player.xVelocity > 0)) {
 				player.x = player.x + 1;
-				player.direction = 0;
 
 				if (player.collisionCheck() === true) {
 
@@ -310,7 +318,6 @@ var player = {
 			}
 			if (Math.round(player.xVelocity < 0)) {
 				player.x = player.x - 1;
-				player.direction = 1;
 
 				if (player.collisionCheck() === true) {
 
@@ -625,12 +632,47 @@ var player = {
 
 	jumpLaunch: false,
 
-	animationFrames: [1, 1, 12, 12, 1, 1, 1, 1],
-	animationRate: [1, 1, 8, 8, 1, 1, 1, 1],
+	animationFrames: [6, 6, 12, 12, 1, 1, 1, 1],
+	armOffset: [
+
+		[0, 4, 4, 4, 0, 0],
+		[0, 4, 4, 4, 0, 0],
+		[4, 8, 4, 4, 0, 0, 4, 8, 4, 4, 0, 0],
+		[4, 8, 4, 4, 0, 0, 4, 8, 4, 4, 0, 0],
+		[],
+		[],
+		[],
+		[],
+
+	],
+
+	animationRate: [24, 24, 8, 8, 1, 1, 1, 1],
 
 	animationFrame: 0,
 
 	animate: function() {
+
+		if (Math.floor(player.xVelocity) > 0) {
+			player.direction = 0;
+		}
+
+		if (Math.floor(player.xVelocity) < 0) {
+			player.direction = 1;
+		}
+
+		if (cursorParameters.mouseDown1 === true && (player.state == 0 || player.state == 1 || player.state == 2 || player.state == 3)) {
+
+			if (cursorParameters.x > renderParameters.windowWidth / 2) {
+				player.direction = 0;
+			}
+
+			 if (cursorParameters.x < renderParameters.windowWidth / 2) {
+				player.direction = 1;
+			}
+
+		}
+
+
 		if (player.direction === 0) {
 			if (player.jump === false) {
 
@@ -642,7 +684,16 @@ var player = {
 
 			}
 			if (player.jump === true) {
-				player.state = 4;
+
+				player.y = player.y - 1;
+
+				if (player.collisionCheck() === false) {
+
+					player.state = 4;
+
+				}
+
+				player.y = player.y + 1;
 
 				//Test for wall slide
 
@@ -669,7 +720,15 @@ var player = {
 			}
 			if (player.jump === true) {
 
-				player.state = 5;
+				player.y = player.y - 1;
+
+				if (player.collisionCheck() === false) {
+
+					player.state = 5;
+
+				}
+
+				player.y = player.y + 1;
 
 				//Test for wall slide
 
@@ -686,7 +745,15 @@ var player = {
 
 		if ((player.state >= 0 && player.state <= 3) || (player.state >= 6 && player.state <= 7)) {
 
-			player.animationFrame = (Math.round(loopTime / player.animationRate[player.state]) % player.animationFrames[player.state]);
+			if ((player.state == 2 || player.state == 3) && cursorParameters.mouseDown1 === true && ((cursorParameters.x >= renderParameters.windowWidth / 2 && player.xVelocity <= 0) || (cursorParameters.x <= renderParameters.windowWidth / 2 && player.xVelocity >= 0))) {
+
+				player.animationFrame = player.animationFrames[player.state] + 1 -(Math.round(loopTime / player.animationRate[player.state]) % player.animationFrames[player.state]) - 2;
+
+			} else {
+
+				player.animationFrame = (Math.round(loopTime / player.animationRate[player.state]) % player.animationFrames[player.state]);
+
+			}
 
 		} else if (player.state >= 4 && player.state <= 5) {
 
@@ -714,9 +781,12 @@ var player = {
 	render: function() {
 		ctx.beginPath();
 
-		ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
-		ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, renderParameters.windowWidth + renderParameters.xOffset, renderParameters.windowHeight + renderParameters.yOffset, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+
+		ctx.drawImage(playerResources[2], 0, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((player.armOffset[player.state][player.animationFrame] + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+
 
 		if (player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) {
 			ctx.arc(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range, 0, 2 * Math.PI);
@@ -747,6 +817,7 @@ var map = {
 	tileHeight: 40,
 	level: 0,
 	generateMap: function() {
+
 		map.tileMap = [];
 		enemies = [];
 
@@ -798,8 +869,12 @@ var map = {
 
 			//Player spawn point
 			if (map.tileMap[i] == 7) {
+
 				player.x = i % map.tileMapWidth * map.tileWidth;
 				player.y = (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight;
+
+				console.log(player.x);
+
 			}
 
 
@@ -1896,18 +1971,18 @@ var map = {
 
 					var tile = map.tileMapTexture[i] - 1;
 
-					ctx.drawImage(mapTextureResources[tile], Math.round(((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.round((((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
+					ctx.drawImage(mapTextureResources[tile], Math.floor(((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
 				}
 			}
 		}
 
 		ctx.fillStyle = '#150a23';
 
-		ctx.fillRect(Math.round(((-player.x + scenery1.width * map.tileWidth - map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
-		ctx.fillRect(Math.round(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x + scenery1.width * map.tileWidth - map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
 
-		ctx.fillRect(Math.round(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round(((-player.y - scenery1.height * map.tileHeight + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
-		ctx.fillRect(Math.round(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.round(((-player.y + scenery1.height * map.tileHeight - map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor(((-player.y - scenery1.height * map.tileHeight + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor(((-player.y + scenery1.height * map.tileHeight - map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
 
 		ctx.closePath();
 
@@ -2099,7 +2174,7 @@ var scenery1 = {
 
 	render: function() {
 		ctx.beginPath();
-		ctx.drawImage(backlayerResources[map.level], Math.round((-player.x * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.round((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, Math.round(scenery1.width * map.tileWidth * renderParameters.xScale / 2) * 2, Math.round(scenery1.height * map.tileHeight * renderParameters.yScale / 2) * 2);
+		ctx.drawImage(backlayerResources[map.level], Math.floor((-player.x * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, Math.floor(scenery1.width * map.tileWidth * renderParameters.xScale / 2) * 2, Math.floor(scenery1.height * map.tileHeight * renderParameters.yScale / 2) * 2);
 
 		ctx.closePath();
 	}
@@ -2130,6 +2205,43 @@ canvas.height = renderParameters.windowHeight * 2;
 //Set the canvas size on screen in pixels
 canvas.style.width = String(renderParameters.windowWidth + 'px');
 canvas.style.height = String(renderParameters.windowHeight + 'px');
+
+ctx.webkitImageSmoothingEnabled = false;
+ctx.mozImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
+
+window.addEventListener('resize', windowResize);
+
+document.addEventListener('fullscreenchange', windowResize);
+
+function windowResize() {
+
+	renderParameters.windowWidth = window.innerWidth;
+	renderParameters.windowHeight = window.innerHeight;
+
+	document.width = String(window.innerWidth + 'px');
+	document.height = String(window.innerHeight + 'px');
+
+	canvas.width = renderParameters.windowWidth * 2;
+	canvas.height = renderParameters.windowHeight * 2;
+
+	canvas.style.width = String(renderParameters.windowWidth + 'px');
+	canvas.style.height = String(renderParameters.windowHeight + 'px');
+
+	ctx.webkitImageSmoothingEnabled = false;
+	ctx.mozImageSmoothingEnabled = false;
+	ctx.imageSmoothingEnabled = false;
+
+}
+
+var smoothCamera = {
+	camera: function() {
+
+		renderParameters.xOffset = (renderParameters.xOffset - (renderParameters.xOffset - (renderParameters.smoothFactorX * player.xVelocity)) * renderParameters.followFactorX) + renderParameters.baseOffsetX;
+		renderParameters.yOffset = (renderParameters.yOffset - (renderParameters.yOffset - (renderParameters.smoothFactorY * player.yVelocity)) * renderParameters.followFactorY) + renderParameters.baseOffsetY;
+
+	}
+}
 
 
   ////////////////////////
@@ -2728,10 +2840,10 @@ function Enemy0(x, y, width, height) {
 		//Draw using enemy textures
 
 		if (this.direction == 0) {
-			ctx.drawImage(enemy0Resources[0], Math.round(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[0], Math.floor(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 		if (this.direction == 1) {
-			ctx.drawImage(enemy0Resources[1], Math.round(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2 ) * 2, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[1], Math.floor(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2 ) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 
 	  ctx.closePath();
@@ -2868,12 +2980,9 @@ initializeObjects();
 
 function initializeObjects() {
 
-	ctx.imageSmoothingEnabled = false;
-
 	//Map generator
-	while(document.getElementById(map.level).complete === false) {
+	while(document.getElementById(map.level).complete === false) {}
 
-	}
 	map.generateMap();
 	map.generateMapTextures();
 
@@ -2997,7 +3106,6 @@ function mainLoop() {
 		}
 
 		//enemyHandler
-
 		for (var i = 0; i < enemies.length; i = i + 1)  {
 
 	    if (enemies[i].delete === true) {
@@ -3019,6 +3127,8 @@ function mainLoop() {
 function render() {
 	'use strict';
 
+	smoothCamera.camera();
+
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	scenery0.render();
@@ -3027,24 +3137,30 @@ function render() {
 	map.render();
 
 	renderLine(renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset, renderParameters.windowHeight + (player.height / 3 * renderParameters.yScale) + renderParameters.yOffset, cursorParameters.x * 2, cursorParameters.y * 2);
+
 	player.render();
 
-	//Render Bullets
-	bullets.forEach(i => {
-		i.render();
-	});
-	userInterface.render();
+
+	//Render bullets
+	for (var i = 0; i < bullets.length; i = i + 1)  {
+
+		bullets[i].render();
+
+	}
 
 	//Render missiles
-	missiles.forEach(i => {
-		i.render();
-	});
-	userInterface.render();
+	for (var i = 0; i < missiles.length; i = i + 1)  {
+
+		missiles[i].render();
+
+	}
 
 	//Render Enemies
-	enemies.forEach(i => {
-		i.render();
-	});
+	for (var i = 0; i < enemies.length; i = i + 1)  {
+
+		enemies[i].render();
+
+	}
 
 
 	//Viginette

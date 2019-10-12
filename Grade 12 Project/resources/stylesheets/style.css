@@ -3,14 +3,9 @@ html {
 
 	background-color: #150a23;
 
-	width: 1920px;
-	height: 1080px;
 }
 body {
 	margin: 0px;
-
-	width: 1920px;
-	height: 1080px;
 
 	overflow: hidden;
 }
@@ -18,6 +13,14 @@ body {
 	border: 0px;
 	vertical-align: top;
 	display: block;
+
+	image-rendering: optimizeSpeed;             // Older versions of FF
+	image-rendering: -moz-crisp-edges;          // FF 6.0+
+	image-rendering: -webkit-optimize-contrast; // Webkit
+																							//  (Safari now, Chrome soon)
+	image-rendering: -o-crisp-edges;            // OS X & Windows Opera (12.02+)
+	image-rendering: optimize-contrast;         // Possible future browsers.
+	-ms-interpolation-mode: nearest-neighbor;   // IE
 }
 #Canvas {
 	display: none;
