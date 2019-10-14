@@ -72,15 +72,6 @@ for (var i = 0; i < 68; ++i) {
 	mapTextureResources.push(img);
 }
 
-var sceneryResources = [];
-
-for (var i = 0; i < 1; ++i) {
-	img = new Image();
-	img.src = 'resources/assets/textures/environment/' + i + '.png';
-
-	sceneryResources.push(img);
-}
-
 var backlayerResources = [];
 
 for (var i = 0; i < 3; ++i) {
@@ -2271,16 +2262,6 @@ var scenery1 = {
 	}
 }
 
-var scenery2 = {
-	render: function() {
-		ctx.beginPath();
-
-		//ctx.drawImage(sceneryResources[0], 0, 0, canvas.width, canvas.height);
-
-		ctx.closePath();
-	}
-}
-
 
   ////////////////////////////
  //////SET CANVAS STATE//////
@@ -3250,10 +3231,6 @@ function render() {
 		enemies[i].render();
 
 	}
-
-
-	//Viginette
-	scenery2.render();
 
 	userInterface.render();
 
