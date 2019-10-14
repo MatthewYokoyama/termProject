@@ -132,7 +132,7 @@ for (var i = 0; i < 1; ++i) {
 
 //Physics variables
 var physicsParameters = {
-	gravity: 0.4
+	gravity: 0.6
 };
 
 //Render variables
@@ -186,7 +186,7 @@ var player = {
 	slopeMax: 3,
 	jump: false,
 	jumpWall: false,
-	jumpHeight: 14,
+	jumpHeight: 18,
 	jumpTapRight: false,
 	jumpTapLeft: false,
 	jumpTime: 8,
@@ -233,7 +233,7 @@ var player = {
 					}
 				} else if (player.jump === true && player.jumpTapRight === false) {
 					if (player.xVelocity < player.xVelocityMax) {
-						player.xVelocity = player.xVelocity + player.xAcceleration / 2;
+						player.xVelocity = player.xVelocity + player.xAcceleration * 0.8;
 					}
 				}
 			}
@@ -248,7 +248,7 @@ var player = {
 					}
 				} else if (player.jump === true && player.jumpTapLeft === false) {
 					if (player.xVelocity > -player.xVelocityMax) {
-						player.xVelocity = player.xVelocity - player.xAcceleration / 2;
+						player.xVelocity = player.xVelocity - player.xAcceleration * 0.8;
 					}
 				}
 			}
@@ -2620,7 +2620,7 @@ function Enemy0(x, y, width, height) {
 	this.slope = 0;
 	this.slopeMax = 3;
 	this.jump = false;
-	this.jumpHeight = 15;
+	this.jumpHeight = 18;
 	this.followDistance = 500;
 	this.trackingRange = 2000;
 	this.collision = false;
