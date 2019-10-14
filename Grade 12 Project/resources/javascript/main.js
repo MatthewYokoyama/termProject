@@ -29,7 +29,7 @@ for (var i = 0; i < 1; ++i) {
 
 var playerResources = [];
 
-for (var i = 0; i < 3; ++i) {
+for (var i = 0; i < 4; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/player/playerSprites/' + i + '.png';
 
@@ -154,7 +154,7 @@ var renderParameters = {
 
 	xOffset: 0,
 	yOffset: -40,
-	baseOffsetX: 0,
+	baseOffsetX: -5,
 	baseOffsetY: 2,
 	smoothFactorX: 1.2,
 	smoothFactorY: 1.2,
@@ -195,7 +195,7 @@ var player = {
 	slopeMax: 3,
 	jump: false,
 	jumpWall: false,
-	jumpHeight: 15,
+	jumpHeight: 14,
 	jumpTapRight: false,
 	jumpTapLeft: false,
 	jumpTime: 8,
@@ -204,6 +204,7 @@ var player = {
 	health: 100,
 	attackDamage: 10,
 	damageToPlayer: [],
+	wallSlide: false,
 
 	//player functions
 	move: function() {
@@ -273,6 +274,9 @@ var player = {
 
 		//Move along x-axis
 		for (var i = 0; i < Math.round(Math.abs(player.xVelocity)); i = i + 1) {
+
+			player.wallSlide = false;
+
 			if (Math.round(player.xVelocity > 0)) {
 				player.x = player.x + 1;
 
@@ -299,6 +303,10 @@ var player = {
 							//Wall sliding
 							if (keystrokelistener.d === true && player.yVelocity > 0) {
 								player.yVelocity = 2;
+								player.wallSlide = true;
+
+								player.direction = 0;
+
 							}
 
 							if (keystrokelistener.w === true || keystrokelistener.space === true) {
@@ -342,6 +350,10 @@ var player = {
 							//Wall sliding
 							if (keystrokelistener.a === true && player.yVelocity > 0) {
 								player.yVelocity = 2;
+								player.wallSlide = true;
+
+								player.direction = 1;
+
 							}
 
 							if (keystrokelistener.w === true || keystrokelistener.space === true) {
@@ -477,7 +489,7 @@ var player = {
 
 		if (cursorParameters.mouseDown1 === false) {
 			player.ability0KeyTap = true;
-		} else if (cursorParameters.mouseDown1 === true && player.coolDown0Ticker <= 0) {
+		} else if (cursorParameters.mouseDown1 === true && player.coolDown0Ticker <= 0 && player.wallSlide === false) {
 			player.ability0KeyTap = false;
 			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 45 * -Math.cos(cursorParameters.angle) + player.xVelocity, 45 * -Math.sin(cursorParameters.angle) + player.yVelocity, true, false, player.width / 2, player.height / 3, 20, 0));
 
@@ -630,19 +642,23 @@ var player = {
 	direction: 0,
 	state: 0,
 
-	jumpLaunch: false,
+	gunStance: 0,
+	gunStanceTime: 230,
 
-	animationFrames: [6, 6, 12, 12, 1, 1, 1, 1],
+
+	animationFrames: [6, 6, 12, 12, 4, 4, 1, 1],
+
+	armRightAngle: 0,
 	armOffset: [
 
 		[0, 4, 4, 4, 0, 0],
 		[0, 4, 4, 4, 0, 0],
 		[4, 8, 4, 4, 0, 0, 4, 8, 4, 4, 0, 0],
 		[4, 8, 4, 4, 0, 0, 4, 8, 4, 4, 0, 0],
-		[],
-		[],
-		[],
-		[],
+		[4, 4, 0, 4],
+		[4, 4, 0, 4],
+		[0],
+		[0],
 
 	],
 
@@ -652,21 +668,28 @@ var player = {
 
 	animate: function() {
 
-		if (Math.floor(player.xVelocity) > 0) {
+		if (cursorParameters.mouseDown1 === false && player.gunStance > 0) {
+			player.gunStance = player.gunStance - 1;
+		} else if (cursorParameters.mouseDown1 === true) {
+			player.gunStance = player.gunStanceTime;
+		}
+
+
+		if (Math.round(player.xVelocity) > 0) {
 			player.direction = 0;
 		}
 
-		if (Math.floor(player.xVelocity) < 0) {
+		if (Math.round(player.xVelocity) < 0) {
 			player.direction = 1;
 		}
 
-		if (cursorParameters.mouseDown1 === true && (player.state == 0 || player.state == 1 || player.state == 2 || player.state == 3)) {
+		if (player.gunStance > 0 === true && player.wallSlide === false) {
 
 			if (cursorParameters.x > renderParameters.windowWidth / 2) {
 				player.direction = 0;
 			}
 
-			 if (cursorParameters.x < renderParameters.windowWidth / 2) {
+			if (cursorParameters.x < renderParameters.windowWidth / 2) {
 				player.direction = 1;
 			}
 
@@ -777,19 +800,89 @@ var player = {
 
 		}
 
+
+		//Arm animation
+
+		if (player.gunStance > 0 && player.wallSlide === false) {
+
+			if ((cursorParameters.angle > Math.PI * 0.5 && cursorParameters.angle < Math.PI * 0.6) || (cursorParameters.angle < Math.PI * 0.5 && cursorParameters.angle > Math.PI * 0.4)) {
+
+				player.armRightAngle = 1;
+
+			} else if ((cursorParameters.angle > Math.PI * 0.6 && cursorParameters.angle < Math.PI * 0.7) || (cursorParameters.angle < Math.PI * 0.4 && cursorParameters.angle > Math.PI * 0.3)) {
+
+				player.armRightAngle = 2;
+
+			} else if ((cursorParameters.angle > Math.PI * 0.7 && cursorParameters.angle < Math.PI * 0.8) || (cursorParameters.angle < Math.PI * 0.3 && cursorParameters.angle > Math.PI * 0.2)) {
+
+				player.armRightAngle = 3;
+
+			} else if ((cursorParameters.angle > Math.PI * 0.8 && cursorParameters.angle < Math.PI * 0.95) || (cursorParameters.angle < Math.PI * 0.2 && cursorParameters.angle > Math.PI * 0.05)) {
+
+				player.armRightAngle = 4;
+
+			} else if (((cursorParameters.angle > Math.PI * 0.95 && cursorParameters.angle < Math.PI) || (cursorParameters.angle > -Math.PI && cursorParameters.angle < Math.PI * -0.95)) || (cursorParameters.angle < Math.PI * 0.05 && cursorParameters.angle > Math.PI * -0.05)) {
+
+				player.armRightAngle = 5;
+
+			} else if ((cursorParameters.angle > Math.PI * -0.95 && cursorParameters.angle < Math.PI * -0.8) || (cursorParameters.angle < Math.PI * -0.05 && cursorParameters.angle > Math.PI * -0.2)) {
+
+				player.armRightAngle = 6;
+
+			} else if ((cursorParameters.angle > Math.PI * -0.8 && cursorParameters.angle < Math.PI * -0.7) || (cursorParameters.angle < Math.PI * -0.2 && cursorParameters.angle > Math.PI * -0.3)) {
+
+				player.armRightAngle = 7;
+
+			} else if ((cursorParameters.angle > Math.PI * -0.7 && cursorParameters.angle < Math.PI * -0.6) || (cursorParameters.angle < Math.PI * -0.3 && cursorParameters.angle > Math.PI * -0.4)) {
+
+				player.armRightAngle = 8;
+
+			} else if ((cursorParameters.angle > Math.PI * -0.6 && cursorParameters.angle < Math.PI * -0.5) || (cursorParameters.angle < Math.PI * -0.4 && cursorParameters.angle > Math.PI * -0.5)) {
+
+				player.armRightAngle = 9;
+
+			} else {
+				player.armRightAngle = 0;
+			}
+
+		} else {
+
+			player.armRightAngle = 0;
+
+		}
+
+
 	},
 	render: function() {
 		ctx.beginPath();
 
-		ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+		if (player.direction == 0) {
 
-		ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[3], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset + (player.width * 0.5 * renderParameters.xScale)) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
 
-		ctx.drawImage(playerResources[2], 0, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((player.armOffset[player.state][player.animationFrame] + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+
+			ctx.drawImage(playerResources[2], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
+
+		}
+
+		if (player.direction == 1) {
+
+			ctx.drawImage(playerResources[2], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset - (player.width * 1.3 * renderParameters.xScale)) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
+
+			ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+
+			ctx.drawImage(playerResources[3], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset - (player.width * 1 * renderParameters.xScale)) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
+
+		}
 
 
 		if (player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) {
-			ctx.arc(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range, 0, 2 * Math.PI);
+
+			ctx.ellipse(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range * renderParameters.xScale, player.ability1Range * renderParameters.yScale, 0, 0, 2 * Math.PI);
+
 			ctx.lineWidth = 12;
 			ctx.strokeStyle = '#081100';
 			ctx.stroke();
@@ -872,8 +965,6 @@ var map = {
 
 				player.x = i % map.tileMapWidth * map.tileWidth;
 				player.y = (i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight;
-
-				console.log(player.x);
 
 			}
 
@@ -1965,7 +2056,7 @@ var map = {
 
 		for (var i = 0; i <= map.tileMapTexture.length; i = i + 1) {
 
-			if (i % map.tileMapWidth * map.tileWidth - player.x > -(renderParameters.windowWidth + map.tileWidth) && i % map.tileMapWidth * map.tileWidth - player.x < renderParameters.windowWidth && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset > -renderParameters.windowHeight && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset < renderParameters.windowHeight * 2) {
+			if ((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale  + renderParameters.xOffset > -(renderParameters.windowWidth + map.tileWidth) && (i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.xOffset < renderParameters.windowWidth && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset > -renderParameters.windowHeight && ((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset < renderParameters.windowHeight * 2) {
 
 				if (map.tileMapTexture[i] > 0) {
 
@@ -1978,11 +2069,11 @@ var map = {
 
 		ctx.fillStyle = '#150a23';
 
-		ctx.fillRect(Math.floor(((-player.x + scenery1.width * map.tileWidth - map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
-		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x + scenery1.width * map.tileWidth - map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
 
-		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor(((-player.y - scenery1.height * map.tileHeight + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
-		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset * renderParameters.xScale) / 2) * 2, Math.floor(((-player.y + scenery1.height * map.tileHeight - map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((-player.y - scenery1.height * map.tileHeight + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((-player.y + scenery1.height * map.tileHeight - map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
 
 		ctx.closePath();
 
@@ -2074,7 +2165,7 @@ var userInterface = {
 
 		ctx.beginPath();
 
-		ctx.drawImage(userInterfaceResources[4], cursorParameters.x * 2 - 40, cursorParameters.y * 2 - 40, 80, 80);
+		ctx.drawImage(userInterfaceResources[4], cursorParameters.x * 2 - (40 * renderParameters.xScale), cursorParameters.y * 2 - (40 * renderParameters.yScale), 80 * renderParameters.xScale, 80 * renderParameters.yScale);
 
 		for (var i = 0; i < 3; ++i) {
 			ctx.drawImage(userInterfaceResources[i], (i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight - userInterface.boxSpacing, userInterface.boxWidth, userInterface.boxHeight);
@@ -2283,7 +2374,7 @@ canvas.addEventListener('mousemove', function(e) {
 	cursorParameters.x = cursorPosition.x;
 	cursorParameters.y = cursorPosition.y;
 
-	cursorParameters.angle = Math.atan2((renderParameters.windowHeight + (player.height / 3 * renderParameters.yScale) + renderParameters.yOffset) - (cursorParameters.y * 2), (renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset) - (cursorParameters.x * 2));
+	cursorParameters.angle = Math.atan2((renderParameters.windowHeight + (player.height / 3 * renderParameters.yScale) + renderParameters.yOffset) - (cursorParameters.y * 2), (renderParameters.windowWidth + renderParameters.xOffset + (player.width / 2 * renderParameters.xScale)) - (cursorParameters.x * 2));
 }, false);
 
 function getCursorPosition(canvas, e) {
@@ -3136,10 +3227,6 @@ function render() {
 
 	map.render();
 
-	renderLine(renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset, renderParameters.windowHeight + (player.height / 3 * renderParameters.yScale) + renderParameters.yOffset, cursorParameters.x * 2, cursorParameters.y * 2);
-
-	player.render();
-
 
 	//Render bullets
 	for (var i = 0; i < bullets.length; i = i + 1)  {
@@ -3154,6 +3241,8 @@ function render() {
 		missiles[i].render();
 
 	}
+
+	player.render();
 
 	//Render Enemies
 	for (var i = 0; i < enemies.length; i = i + 1)  {
@@ -3176,26 +3265,5 @@ function render() {
 
 
 	window.requestAnimationFrame(render);
-
-}
-
-function renderLine(x1, y1, x2, y2) {
-
-	ctx.beginPath;
-
-	ctx.lineCap = 'round';
-
-	ctx.moveTo(x1, y1);
-	ctx.lineTo(x2, y2);
-	ctx.lineWidth = 12;
-	ctx.strokeStyle = '#081100';
-	ctx.stroke();
-
-	ctx.moveTo(x1, y1);
-	ctx.lineTo(x2, y2);
-	ctx.lineWidth = 5;
-	ctx.strokeStyle = '#6fb032';
-	ctx.stroke();
-	ctx.closePath();
 
 }
