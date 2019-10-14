@@ -2174,9 +2174,8 @@ var userInterface = {
 		ctx.fillStyle = '#000000';
 		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing, userInterface.healthWidth, userInterface.healthHeight);
 
-		if ((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) > (userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100)) {
-			userInterface.apparentHealthWidth = userInterface.apparentHealthWidth - 0.5;
-		}
+		//Trailing gold health
+		userInterface.apparentHealthWidth = userInterface.apparentHealthWidth - (((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) - ((userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100))) * 0.05);
 
 		ctx.fillStyle = '#FFFF00';
 		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.healthBorderWidth, (userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2), userInterface.healthHeight - userInterface.healthBorderWidth * 2);
