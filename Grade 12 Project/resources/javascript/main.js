@@ -912,7 +912,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 1,
+	level: 0,
 	generateMap: function() {
 
 		map.tileMap = [];
