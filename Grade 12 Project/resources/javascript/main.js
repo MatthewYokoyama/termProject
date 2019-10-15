@@ -2269,7 +2269,7 @@ function DamageText(x, y, value) {
 
 		for (var i = 0; i < this.characters.length; i = i + 1) {
 
-			ctx.drawImage(damageTextResources[0], this.characters[i] * 8, 0, 8, 10, Math.floor((((this.x + i * 32 - (this.characters.length * 16)) - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, 32, 40);
+			ctx.drawImage(damageTextResources[0], this.characters[i] * 8, 0, 8, 10, Math.floor((((this.x + i * 32 - (this.characters.length * 16)) - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, 32 * renderParameters.xScale, 40 * renderParameters.yScale);
 
 		}
 
