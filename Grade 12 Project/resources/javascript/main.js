@@ -482,7 +482,7 @@ var player = {
 			player.ability0KeyTap = true;
 		} else if (cursorParameters.mouseDown1 === true && player.coolDown0Ticker <= 0 && player.wallSlide === false) {
 			player.ability0KeyTap = false;
-			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 45 * -Math.cos(cursorParameters.angle) + player.xVelocity, 45 * -Math.sin(cursorParameters.angle) + player.yVelocity, true, false, player.width / 2, player.height / 3, 20, 0));
+			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40 * -Math.cos(cursorParameters.angle), 40 * -Math.sin(cursorParameters.angle), true, false, player.width / 2, player.height / 3.5, 14, 0));
 
 			//Sound effect
 			const newAudio = abilitySounds[0].cloneNode();
@@ -583,7 +583,7 @@ var player = {
 
 					enemies[player.enemyTarget[player.projectileCounter]].targetID.push(player.targetIDs.length);
 
-					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length));
+					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity - 250, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length));
 
 					player.targetIDs.push(player.targetIDs.length);
 
@@ -2442,12 +2442,27 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	this.radius = radius;
 	this.type = type;
 	this.delete = false;
+
+	this.trail = [];
+	this.trailLength = 0;
+
+	this.trailStyle0 = 0;
+
 	this.move = function() {
+
 
 		this.velocity = Math.round(Math.hypot(this.xVelocity, this.yVelocity));
 		this.angle = Math.atan2(this.yVelocity, this.xVelocity);
 
 		for (var i = 0; i < this.velocity; i = i + 1) {
+
+			this.trail.push(this.x);
+			this.trail.push(this.y);
+
+			if (this.trail.length > this.trailLength * 2) {
+				this.trail.splice(0, 2);
+			}
+
 			this.x = this.x + 1 * Math.cos(this.angle);
 			this.y = this.y + 1 * Math.sin(this.angle);
 
@@ -2506,10 +2521,22 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	}
 	this.render = function() {
 
+		if (this.type === 0) {
+
+			for (var i = 0; i < this.trail.length / 2; i = i + 1) {
+
+				ctx.drawImage(abilityResources[0], Math.floor(((this.trail[i * 2] - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.trail[i * 2 + 1] - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+
+			}
+
+		}
+
+
 		ctx.beginPath();
 
+
 		if (this.type == 0) {
-			ctx.drawImage(abilityResources[0], (this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+			ctx.drawImage(abilityResources[0], Math.floor(((this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 		}
 
 		if (this.type == 1) {
@@ -2560,9 +2587,6 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target) {
 					if (this.yVelocity < this.velocity * -Math.sin(this.angle)) {
 						this.yVelocity = this.yVelocity - (this.yVelocity - this.velocity * -Math.sin(this.angle)) * 0.5;
 					}
-
-					// this.x = this.x + this.xVelocity;
-					// this.y = this.y + this.yVelocity;
 
 					if (enemies[i].delete === true) {
 						this.delete = true;
