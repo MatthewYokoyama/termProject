@@ -36,13 +36,22 @@ for (var i = 0; i < 4; ++i) {
 	playerResources.push(img);
 }
 
-var abilityResources = [];
+var ability0Resources = [];
 
 for (var i = 0; i < 1; ++i) {
 	img = new Image();
 	img.src = 'resources/assets/textures/player/ability0/' + i + '.png';
 
-	abilityResources.push(img);
+	ability0Resources.push(img);
+}
+
+var ability1Resources = [];
+
+for (var i = 0; i < 1; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/player/ability1/' + i + '.png';
+
+	ability1Resources.push(img);
 }
 
 var userInterfaceResources = [];
@@ -54,13 +63,13 @@ for (var i = 0; i < 6; ++i) {
 	userInterfaceResources.push(img);
 }
 
-var damageTextResources = [];
+var numberDisplayResources = [];
 
 for (var i = 0; i < 1; ++i) {
 	img = new Image();
-	img.src = 'resources/assets/textures/userinterface/damageText/' + i + '.png';
+	img.src = 'resources/assets/textures/userinterface/numberDisplay/' + i + '.png';
 
-	damageTextResources.push(img);
+	numberDisplayResources.push(img);
 }
 
 var startScreenResources = [];
@@ -185,14 +194,19 @@ var player = {
 	//HEIGHT AND WIDTH VALUES MUST BE A MULTIPLE OF 40
 	height: 160,
 	width: 80,
+
 	x: 0,
 	y: 0,
+
 	xVelocity: 0,
 	yVelocity: 0,
+
 	xAcceleration: 0.7,
 	xVelocityMax: 13,
+
 	slope: 0,
 	slopeMax: 3,
+
 	jump: false,
 	jumpWall: false,
 	jumpHeight: 18,
@@ -200,11 +214,17 @@ var player = {
 	jumpTapLeft: false,
 	jumpTime: 8,
 	jumpTicker: 0,
+
+	wallSlide: false,
+
 	collision: false,
+
 	health: 100,
 	attackDamage: 10,
+
+	score: 0,
+
 	damageToPlayer: [],
-	wallSlide: false,
 
 	//player functions
 	move: function() {
@@ -596,7 +616,7 @@ var player = {
 
 					enemies[player.enemyTarget[player.projectileCounter]].targetID.push(player.targetIDs.length);
 
-					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity - 250, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length, this.ability1Damage));
+					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity - 200, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length, this.ability1Damage));
 
 					player.targetIDs.push(player.targetIDs.length);
 
@@ -2205,13 +2225,13 @@ var userInterface = {
 };
 
 
-  ///////////////////////
- //////DAMAGE TEXT//////
-///////////////////////
+  //////////////////////////
+ //////NUMBER DISPLAY//////
+//////////////////////////
 
-let damageText = [];
+let numberDisplay = [];
 
-function DamageText(x, y, value) {
+function NumberDisplay(x, y, value, type) {
 	this.x = x;
 	this.y = y;
 
@@ -2220,6 +2240,8 @@ function DamageText(x, y, value) {
 
 	this.value = String(value);
 	this.characters = [];
+
+	this.type = type;
 
 	this.delete = false;
 
@@ -2269,7 +2291,7 @@ function DamageText(x, y, value) {
 
 		for (var i = 0; i < this.characters.length; i = i + 1) {
 
-			ctx.drawImage(damageTextResources[0], this.characters[i] * 8, 0, 8, 10, Math.floor((((this.x + i * 32 - (this.characters.length * 16)) - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, 32 * renderParameters.xScale, 40 * renderParameters.yScale);
+			ctx.drawImage(numberDisplayResources[0], this.characters[i] * 8, 10 * this.type, 8, 10, Math.floor((((this.x + i * 32 - (this.characters.length * 16)) - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y - (40 * this.ticker / this.time)) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, 32 * renderParameters.xScale, 40 * renderParameters.yScale);
 
 		}
 
@@ -2596,8 +2618,6 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 					enemies[n].damageToEnemy.push(this.damage);
 
-					console.log(enemies[n].damageToEnemy);
-
 				}
 
 				this.delete = true;
@@ -2631,7 +2651,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 			for (var i = 0; i < this.trail.length / 2; i = i + 1) {
 
-				ctx.drawImage(abilityResources[0], Math.floor(((this.trail[i * 2] - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.trail[i * 2 + 1] - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+				ctx.drawImage(ability0Resources[0], Math.floor(((this.trail[i * 2] - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.trail[i * 2 + 1] - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 
 			}
 
@@ -2642,7 +2662,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 
 		if (this.type == 0) {
-			ctx.drawImage(abilityResources[0], Math.floor(((this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+			ctx.drawImage(ability0Resources[0], Math.floor(((this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 		}
 
 		if (this.type == 1) {
@@ -2717,8 +2737,6 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 
 									enemies[n].damageToEnemy.push(this.damage);
 
-									console.log(enemies[n].damageToEnemy);
-
 								}
 
 								this.delete = true;
@@ -2741,9 +2759,7 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 	this.render = function() {
 		ctx.beginPath();
 
-		ctx.fillStyle = '#FFFFFF';
-
-		ctx.fillRect((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
+		ctx.drawImage(ability1Resources[0], (this.x - player.x - 20) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y - 20) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
 
 		ctx.closePath();
 	}
@@ -2786,6 +2802,8 @@ function Enemy0(x, y, width, height) {
 	this.delete = false;
 	this.enemyID = 0;
 	this.targetID = [];
+
+	this.points = 100;
 
 	this.loop = function() {
 			this.move();
@@ -3065,13 +3083,21 @@ function Enemy0(x, y, width, height) {
 
 			this.damageToEnemy = [];
 
-			//Damage text
-			damageText.push(new DamageText(this.x + this.width / 2, this.y + this.height / 2, this.damageTotal));
+			if (this.health <= 0) {
+				this.delete = true;
 
-		}
 
-		if (this.health <= 0) {
-			this.delete = true;
+				numberDisplay.push(new NumberDisplay(this.x + this.width / 2, this.y + this.height / 2, this.points, 1));
+
+				player.score = player.score + this.points;
+
+			} else {
+
+				//Damage text
+				numberDisplay.push(new NumberDisplay(this.x + this.width / 2, this.y + this.height / 2, this.damageTotal, 0));
+
+			}
+
 		}
 
 	}
@@ -3117,6 +3143,8 @@ function Enemy1(x, y, width, height) {
 	this.delete = false;
 	this.enemyID = 0;
 	this.targetID = [];
+
+	this.points = 70;
 
 	this.loop = function() {
 		if (this.x + this.width / 2 > player.x + player.width / 2 - this.trackingRange && this.x + this.width / 2 < player.x + player.width / 2 + this.trackingRange) {
@@ -3204,16 +3232,24 @@ function Enemy1(x, y, width, height) {
 
 			this.damageToEnemy = [];
 
-			//Damage text
-			damageText.push(new DamageText(this.x + this.width / 2, this.y + this.height / 2, this.damageTotal));
+			if (this.health <= 0) {
+				this.delete = true;
+
+
+				numberDisplay.push(new NumberDisplay(this.x + this.width / 2, this.y + this.height / 2, this.points, 1));
+
+				player.score = player.score + this.points;
+
+			} else {
+
+				//Damage text
+				numberDisplay.push(new NumberDisplay(this.x + this.width / 2, this.y + this.height / 2, this.damageTotal, 0));
+
+			}
 
 			//Stuns attack
 			this.coolDownTicker = this.coolDown;
 
-		}
-
-		if (this.health <= 0) {
-			this.delete = true;
 		}
 
 	}
@@ -3350,9 +3386,9 @@ function mainLoop() {
 		}
 
 		//Damage text
-		for (var i = 0; i < damageText.length; i = i + 1)  {
+		for (var i = 0; i < numberDisplay.length; i = i + 1)  {
 
-			damageText[i].loop();
+			numberDisplay[i].loop();
 
 		}
 
@@ -3385,10 +3421,10 @@ function mainLoop() {
 	    }
 		}
 
-		for (var i = damageText.length - 1; i >= 0; i = i - 1)  {
+		for (var i = numberDisplay.length - 1; i >= 0; i = i - 1)  {
 
-			if (damageText[i].delete == true) {
-				damageText.splice(i, 1);
+			if (numberDisplay[i].delete == true) {
+				numberDisplay.splice(i, 1);
 			}
 		}
 
@@ -3440,9 +3476,9 @@ function render() {
 	}
 
 
-	for (var i = 0; i < damageText.length; i = i + 1)  {
+	for (var i = 0; i < numberDisplay.length; i = i + 1)  {
 
-		damageText[i].render();
+		numberDisplay[i].render();
 
 	}
 
@@ -3451,7 +3487,9 @@ function render() {
 	stageTransition.render();
 
 	if (startScreen.active === true) {
+
 		startScreen.render();
+
 	}
 
 
