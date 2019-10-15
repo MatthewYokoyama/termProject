@@ -54,6 +54,15 @@ for (var i = 0; i < 6; ++i) {
 	userInterfaceResources.push(img);
 }
 
+var damageTextResources = [];
+
+for (var i = 0; i < 1; ++i) {
+	img = new Image();
+	img.src = 'resources/assets/textures/userinterface/damageText/' + i + '.png';
+
+	damageTextResources.push(img);
+}
+
 var startScreenResources = [];
 
 for (var i = 0; i < 4; ++i) {
@@ -472,6 +481,8 @@ var player = {
 	coolDown0: 25,
 	ability0KeyTap: false,
 
+	ability0Damage: 15,
+
 	ability0: function() {
 		//Decrease cooldown timer
 		if (player.coolDown0Ticker > 0) {
@@ -482,7 +493,7 @@ var player = {
 			player.ability0KeyTap = true;
 		} else if (cursorParameters.mouseDown1 === true && player.coolDown0Ticker <= 0 && player.wallSlide === false) {
 			player.ability0KeyTap = false;
-			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40 * -Math.cos(cursorParameters.angle), 40 * -Math.sin(cursorParameters.angle), true, false, player.width / 2, player.height / 3.5, 14, 0));
+			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40 * -Math.cos(cursorParameters.angle), 40 * -Math.sin(cursorParameters.angle), true, false, player.width / 2, player.height / 3.5, 14, 0 , this.ability0Damage));
 
 			//Sound effect
 			const newAudio = abilitySounds[0].cloneNode();
@@ -510,6 +521,8 @@ var player = {
 	targetIDs: [],
 
 	projectileCounter: 0,
+
+	ability1Damage: 30,
 
 	ability1: function() {
 
@@ -583,7 +596,7 @@ var player = {
 
 					enemies[player.enemyTarget[player.projectileCounter]].targetID.push(player.targetIDs.length);
 
-					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity - 250, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length));
+					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity - 250, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length, this.ability1Damage));
 
 					player.targetIDs.push(player.targetIDs.length);
 
@@ -899,7 +912,7 @@ var map = {
 	tileMapWidth: 0,
 	tileWidth: 40,
 	tileHeight: 40,
-	level: 0,
+	level: 1,
 	generateMap: function() {
 
 		map.tileMap = [];
@@ -2192,6 +2205,86 @@ var userInterface = {
 };
 
 
+  ///////////////////////
+ //////DAMAGE TEXT//////
+///////////////////////
+
+let damageText = [];
+
+function DamageText(x, y, value) {
+	this.x = x;
+	this.y = y;
+
+	this.ticker = 200;
+	this.time = 200;
+
+	this.value = String(value);
+	this.characters = [];
+
+	this.delete = false;
+
+	this.loop = function() {
+
+		if (this.ticker == this.time) {
+
+			this.generateCharacters();
+
+		}
+
+		if (this.ticker > 0) {
+
+			this.ticker = this.ticker - 1;
+
+		} else {
+
+			this.delete = true;
+
+		}
+
+
+
+	}
+
+	this.generateCharacters = function() {
+
+		this.characters = [];
+
+		for (var i = 0; i < this.value.length; i = i + 1) {
+
+			this.characters.push(parseInt(this.value.charAt(i), 10));
+
+		}
+
+	}
+
+	this.render = function() {
+
+		ctx.beginPath();
+
+		if (this.ticker / this.time >= 0.5) {
+			ctx.globalAlpha = 1;
+		} else {
+			ctx.globalAlpha = this.ticker * 2 / this.time;
+		}
+
+		for (var i = 0; i < this.characters.length; i = i + 1) {
+
+			ctx.drawImage(damageTextResources[0], this.characters[i] * 8, 0, 8, 10, Math.floor((((this.x + i * 32 - (this.characters.length * 16)) - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, 32, 40);
+
+		}
+
+		ctx.globalAlpha = 1;
+
+		ctx.closePath();
+
+	}
+
+}
+
+
+
+
+
   ////////////////////////////
  //////STAGE TRANSITION//////
 ////////////////////////////
@@ -2430,17 +2523,22 @@ var keystrokelistener = {
 
 let bullets = [];
 
-function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy, xOffset, yOffset, radius, type) {
+function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy, xOffset, yOffset, radius, type, damage) {
 	this.x = x + xOffset;
 	this.y = y + yOffset;
+
 	this.xVelocity = xVelocityInitial;
 	this.yVelocity = yVelocityInitial;
 	this.velocity = 0;
 	this.angle = angle;
 	this.gravity = gravity;
+
 	this.enemy = enemy;
 	this.radius = radius;
 	this.type = type;
+
+	this.damage = damage;
+
 	this.delete = false;
 
 	this.trail = [];
@@ -2491,13 +2589,21 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	this.attackEnemy = function () {
 
 		for (var n = 0; n < enemies.length; n = n + 1) {
+
 			if (this.x < enemyCollisionBoxes[n * 4] + enemyCollisionBoxes[n * 4 + 2] && this.x > enemyCollisionBoxes[n * 4] && this.y < enemyCollisionBoxes[n * 4 + 1] + enemyCollisionBoxes[n * 4 + 3] && this.y > enemyCollisionBoxes[n * 4 + 1]) {
-				if (this.delete === false) {
-					enemies[n].takeDamage();
+
+				if (this.delete == false) {
+
+					enemies[n].damageToEnemy.push(this.damage);
+
+					console.log(enemies[n].damageToEnemy);
+
 				}
 
 				this.delete = true;
+
 			}
+
 		}
 
 
@@ -2552,17 +2658,22 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 let missiles = [];
 
-function Missile(x, y, xVelocity, yVelocity, velocity, angle, target) {
+function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 	this.x = x;
 	this.y = y;
+
 	this.width = 40;
 	this.height = 40;
+
 	this.velocity = velocity;
 	this.xVelocity = xVelocity;
 	this.yVelocity = yVelocity;
+
 	this.angle = angle;
-	this.delete = false;
+	this.damage = damage;
 	this.target = target;
+
+	this.delete = false;
 
 	this.move = function() {
 
@@ -2592,18 +2703,28 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target) {
 						this.delete = true;
 					}
 
-					for (var n = 0; n < Math.abs(Math.hypot(this.xVelocity, this.yVelocity)); n = n + 1) {
+					for (var z = 0; z < Math.abs(Math.hypot(this.xVelocity, this.yVelocity)); z = z + 1) {
 
 						this.x = this.x + Math.cos(Math.atan2(this.yVelocity, this.xVelocity));
 						this.y = this.y + Math.sin(Math.atan2(this.yVelocity, this.xVelocity));
 
 
-						if (this.x < enemyCollisionBoxes[i * 4] + enemyCollisionBoxes[i * 4 + 2] && this.x + this.width> enemyCollisionBoxes[i * 4] && this.y < enemyCollisionBoxes[i * 4 + 1] + enemyCollisionBoxes[i * 4 + 3] && this.y  + this.height> enemyCollisionBoxes[i * 4 + 1]) {
-							if (this.delete === false) {
-								enemies[i].takeDamage();
+						for (var n = 0; n < enemies.length; n = n + 1) {
+
+							if (this.x < enemyCollisionBoxes[n * 4] + enemyCollisionBoxes[n * 4 + 2] && this.x > enemyCollisionBoxes[n * 4] && this.y < enemyCollisionBoxes[n * 4 + 1] + enemyCollisionBoxes[n * 4 + 3] && this.y > enemyCollisionBoxes[n * 4 + 1]) {
+
+								if (this.delete == false) {
+
+									enemies[n].damageToEnemy.push(this.damage);
+
+									console.log(enemies[n].damageToEnemy);
+
+								}
+
+								this.delete = true;
+
 							}
 
-							this.delete = true;
 						}
 
 					}
@@ -2619,6 +2740,8 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target) {
 
 	this.render = function() {
 		ctx.beginPath();
+
+		ctx.fillStyle = '#FFFFFF';
 
 		ctx.fillRect((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
 
@@ -2648,14 +2771,17 @@ function Enemy0(x, y, width, height) {
 	this.trackingRange = 2000;
 	this.collision = false;
 	this.health = 100;
+
 	this.attackDistance = 20;
 	this.attacking = false;
 	this.attackTicker = 0;
 	this.attackTime = 8;
 	this.attacked = false;
 	this.attackDamage = 1;
-	this.armor = 0.01;
-	this.criticalStrikeChance = 0;
+
+	this.damageToEnemy = [];
+	this.damageTotal = 0;
+
 	this.direction = 0;
 	this.delete = false;
 	this.enemyID = 0;
@@ -2919,14 +3045,35 @@ function Enemy0(x, y, width, height) {
   }
 
 	this.takeDamage = function() {
-		this.xVelocity = this.xVelocity + 20 * (Math.cos(Math.atan2(this.y - player.y, this.x - player.x)));
-		this.yVelocity = this.yVelocity + 10 * (Math.sin(Math.atan2(this.y - player.y, this.x - player.x)));
 
-		this.health = this.health - (player.attackDamage * (1 - this.armor));
+
+		if (this.damageToEnemy.length > 0) {
+
+			this.xVelocity = this.xVelocity + 20 * (Math.cos(Math.atan2(this.y - player.y, this.x - player.x)));
+			this.yVelocity = this.yVelocity + 10 * (Math.sin(Math.atan2(this.y - player.y, this.x - player.x)));
+
+
+			this.damageTotal = 0
+
+			for (var i = 0; i < this.damageToEnemy.length; i = i + 1) {
+
+				this.health = this.health - this.damageToEnemy[i];
+
+				this.damageTotal = Math.round(this.damageTotal + this.damageToEnemy[i]);
+
+			}
+
+			this.damageToEnemy = [];
+
+			//Damage text
+			damageText.push(new DamageText(this.x + this.width / 2, this.y + this.height / 2, this.damageTotal));
+
+		}
 
 		if (this.health <= 0) {
 			this.delete = true;
 		}
+
 	}
 
   this.render = function() {
@@ -2954,7 +3101,10 @@ function Enemy1(x, y, width, height) {
 	this.xTarget = 0;
 	this.yTarget = 0;
 	this.health = 40;
-	this.armor = 0;
+
+	this.damageToEnemy = [];
+	this.damageTotal = 0;
+
 	this.direction = 0;
 	this.coolDownTicker = 0;
 	this.coolDown = 400;
@@ -3025,7 +3175,7 @@ function Enemy1(x, y, width, height) {
 		if (this.coolDownTicker <= 0) {
 			if (Math.abs((this.x + this.width / 2) - (player.x + player.width / 2)) > this.attackDistance / 2 && this.targetLocked === true) {
 
-				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10 * -Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), 10 * -Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), false, true, this.width / 2, this.height / 2, 20, 1));
+				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10 * -Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), 10 * -Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2), 10)), false, true, this.width / 2, this.height / 2, 20, 1));
 
 				this.coolDownTicker = this.coolDown;
 			}
@@ -3036,18 +3186,36 @@ function Enemy1(x, y, width, height) {
   }
 
 	this.takeDamage = function() {
-		this.x = this.x + 60 * (Math.cos(Math.atan2(this.y - player.y, this.x - player.x)));
-		this.y = this.y + 60 * (Math.sin(Math.atan2(this.y - player.y, this.x - player.x)));
 
-		this.health = this.health - (player.attackDamage * (1 - this.armor));
+		if (this.damageToEnemy.length > 0) {
 
-		//Stuns attack
-		this.coolDownTicker = this.coolDown;
+			this.x = this.x + 60 * (Math.cos(Math.atan2(this.y - player.y, this.x - player.x)));
+			this.y = this.y + 60 * (Math.sin(Math.atan2(this.y - player.y, this.x - player.x)));
 
+			this.damageTotal = 0;
+
+			for (var i = 0; i < this.damageToEnemy.length; i = i + 1) {
+
+				this.health = this.health - this.damageToEnemy[i];
+
+				this.damageTotal = Math.round(this.damageTotal + this.damageToEnemy[i]);
+
+			}
+
+			this.damageToEnemy = [];
+
+			//Damage text
+			damageText.push(new DamageText(this.x + this.width / 2, this.y + this.height / 2, this.damageTotal));
+
+			//Stuns attack
+			this.coolDownTicker = this.coolDown;
+
+		}
 
 		if (this.health <= 0) {
 			this.delete = true;
 		}
+
 	}
 
   this.render = function() {
@@ -3157,11 +3325,13 @@ function mainLoop() {
 		 //////MOVE ENTITIES//////
 		/////////////////////////
 
-		//enemyHandler
+		//enemy handler
 		for (var i = 0; i < enemies.length; i = i + 1)  {
 
 			enemies[i].enemyID = i;
 			enemies[i].loop();
+
+			enemies[i].takeDamage();
 
 		}
 
@@ -3179,33 +3349,47 @@ function mainLoop() {
 
 		}
 
+		//Damage text
+		for (var i = 0; i < damageText.length; i = i + 1)  {
+
+			damageText[i].loop();
+
+		}
+
 
 		  ///////////////////////////
 		 //////DELETE ENTITIES//////
 		///////////////////////////
 
 		//Bullet handler
-		for (var i = 0; i < bullets.length; i = i + 1)  {
+		for (var i = bullets.length - 1; i >= 0; i = i - 1)  {
 
-	    if (bullets[i].delete === true) {
+	    if (bullets[i].delete == true) {
 	      bullets.splice(i, 1);
 	    }
 	  }
 
 		//Missile handler
-		for (var i = 0; i < missiles.length; i = i + 1)  {
+		for (var i = missiles.length - 1; i >= 0; i = i - 1)  {
 
-			if (missiles[i].delete === true) {
+			if (missiles[i].delete == true) {
 				missiles.splice(i, 1);
 			}
 		}
 
 		//enemyHandler
-		for (var i = 0; i < enemies.length; i = i + 1)  {
+		for (var i = enemies.length - 1; i >= 0; i = i - 1)  {
 
-	    if (enemies[i].delete === true) {
+	    if (enemies[i].delete == true) {
 	      enemies.splice(i, 1);
 	    }
+		}
+
+		for (var i = damageText.length - 1; i >= 0; i = i - 1)  {
+
+			if (damageText[i].delete == true) {
+				damageText.splice(i, 1);
+			}
 		}
 
 	}
@@ -3252,6 +3436,13 @@ function render() {
 	for (var i = 0; i < enemies.length; i = i + 1)  {
 
 		enemies[i].render();
+
+	}
+
+
+	for (var i = 0; i < damageText.length; i = i + 1)  {
+
+		damageText[i].render();
 
 	}
 
