@@ -2693,6 +2693,9 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 	this.damage = damage;
 	this.target = target;
 
+	this.trail = [];
+	this.trailLength = 10;
+
 	this.delete = false;
 
 	this.move = function() {
@@ -2728,6 +2731,15 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 						this.x = this.x + Math.cos(Math.atan2(this.yVelocity, this.xVelocity));
 						this.y = this.y + Math.sin(Math.atan2(this.yVelocity, this.xVelocity));
 
+						this.trail.push(this.x);
+						this.trail.push(this.y);
+
+						if (this.trail.length / 2 > this.trailLength) {
+
+							this.trail.splice(0, 2);
+
+						}
+
 
 						for (var n = 0; n < enemies.length; n = n + 1) {
 
@@ -2758,6 +2770,13 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 
 	this.render = function() {
 		ctx.beginPath();
+
+		for (var i = 0; i < this.trail.length / 2; i = i + 1) {
+
+			ctx.drawImage(ability1Resources[0], (this.trail[i * 2] - player.x - 20) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.trail[i * 2 + 1] - player.y - 20) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
+
+		}
+
 
 		ctx.drawImage(ability1Resources[0], (this.x - player.x - 20) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y - 20) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
 
