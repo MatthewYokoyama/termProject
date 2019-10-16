@@ -173,6 +173,10 @@ var renderParameters = {
 	//Game loop frequency in (Hz)
 	gameSpeed: 120,
 	pause: false,
+	pauseToggle: false,
+
+
+	executeTransition: false,
 };
 
 var cursorParameters = {
@@ -182,7 +186,12 @@ var cursorParameters = {
 	mouseDown1: false,
 	mouseDown2: false,
 	mouseDown3: false,
-	click: true
+	click: true,
+
+	render: function() {
+		ctx.drawImage(userInterfaceResources[4], cursorParameters.x * 2 - (40 * renderParameters.xScale), cursorParameters.y * 2 - (40 * renderParameters.yScale), 80 * renderParameters.xScale, 80 * renderParameters.yScale);
+	}
+
 };
 
   /////////////////////////
@@ -479,8 +488,8 @@ var player = {
 				if (map.tileMap[tileCheck] == 6) {
 					if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
 
-						//Pauses the game for stage transition
-						renderParameters.pause = true;
+						//executeTransitions the game for stage transition
+						renderParameters.executeTransition = true;
 
 					}
 				} else if (map.tileMap[tileCheck] == 10) {
@@ -903,7 +912,7 @@ var player = {
 		}
 
 
-		if (player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) {
+		if ((player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) && renderParameters.pause === false) {
 
 			ctx.ellipse(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range * renderParameters.xScale, player.ability1Range * renderParameters.yScale, 0, 0, 2 * Math.PI);
 
@@ -2071,7 +2080,7 @@ var map = {
 		}
 
 
-		renderParameters.pause = false;
+		renderParameters.executeTransition = false;
 
 	},
 	render: function() {
@@ -2189,8 +2198,6 @@ var userInterface = {
 
 		ctx.beginPath();
 
-		ctx.drawImage(userInterfaceResources[4], cursorParameters.x * 2 - (40 * renderParameters.xScale), cursorParameters.y * 2 - (40 * renderParameters.yScale), 80 * renderParameters.xScale, 80 * renderParameters.yScale);
-
 		for (var i = 0; i < 3; ++i) {
 			ctx.drawImage(userInterfaceResources[i], (i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight - userInterface.boxSpacing, userInterface.boxWidth, userInterface.boxHeight);
 		}
@@ -2223,6 +2230,72 @@ var userInterface = {
 		ctx.closePath();
 	}
 };
+
+
+  ////////////////////////
+ //////PAUSE SCREEN//////
+////////////////////////
+
+var pauseScreen = {
+
+	elementOpacityTarget: 1.0,
+
+	backgroundOpacityTarget: 0.5,
+
+	opacity: 0,
+
+	loop: function() {
+
+		if (renderParameters.pause === true) {
+
+			if (pauseScreen.opacity < 1) {
+
+				pauseScreen.opacity = pauseScreen.opacity + 0.05;
+
+				if (pauseScreen.opacity > 1) {
+					pauseScreen.opacity = 1;
+				}
+
+			}
+
+
+		}
+
+		if (renderParameters.pause === false) {
+
+			if (pauseScreen.opacity > 0) {
+
+				pauseScreen.opacity = pauseScreen.opacity - 0.05;
+
+				if (pauseScreen.opacity < 0) {
+					pauseScreen.opacity = 0;
+				}
+
+			}
+
+
+		}
+
+
+	},
+
+	render: function() {
+
+		ctx.beginPath();
+
+		ctx.globalAlpha = pauseScreen.backgroundOpacityTarget * pauseScreen.opacity;
+
+		ctx.fillStyle = '#000000';
+
+		ctx.fillRect(0, 0, renderParameters.windowWidth * 2, renderParameters.windowHeight * 2);
+
+
+		ctx.globalAlpha = 1;
+
+		ctx.closePath();
+	}
+
+}
 
 
   //////////////////////////
@@ -2330,7 +2403,7 @@ var stageTransition = {
 			stageTransition.width = 0;
 
 			map.level = map.level + 1;
-			renderParameters.pause = false;
+			renderParameters.executeTransition = false;
 
 			map.generateMap();
 			map.generateMapTextures();
@@ -2490,7 +2563,12 @@ var keystrokelistener = {
 	a: false,
 	s: false,
 	d: false,
+
 	space: false,
+
+	escape: false,
+
+
 	logKeystrokes: function() {
 		'use strict';
     document.onkeydown = function (keyDown) {
@@ -2509,9 +2587,26 @@ var keystrokelistener = {
       if (String.fromCharCode(charCode) === 'A') {
         keystrokelistener.a = true;
       }
+
 			if (charCode === 32) {
         keystrokelistener.space = true;
       }
+
+			if (charCode === 27) {
+				keystrokelistener.escape = true;
+
+				if (renderParameters.pauseToggle === false) {
+					renderParameters.pauseToggle = true;
+
+					if (renderParameters.pause === false) {
+						renderParameters.pause = true;
+					} else if (renderParameters.pause === true) {
+						renderParameters.pause = false;
+					}
+
+				}
+			}
+
     };
     document.onkeyup = function (keyUp) {
       keyUp = keyUp || window.event;
@@ -2529,10 +2624,36 @@ var keystrokelistener = {
       if (String.fromCharCode(charCode) === 'A') {
         keystrokelistener.a = false;
       }
+
 			if (charCode === 32) {
 				keystrokelistener.space = false;
 			}
+
+			if (charCode === 27) {
+				keystrokelistener.escape = false;
+
+				renderParameters.pauseToggle = false;
+			}
+
     };
+
+		window.addEventListener('blur', function(event) {
+
+			keystrokelistener.w = false;
+			keystrokelistener.s = false;
+			keystrokelistener.d = false;
+			keystrokelistener.a = false;
+
+			keystrokelistener.space = false;
+			keystrokelistener.escape = false;
+
+			cursorParameters.mouseDown1 = false;
+			cursorParameters.mouseDown2 = false;
+			cursorParameters.mouseDown3 = false;
+
+			renderParameters.pause = true;
+
+		}, false);
 	}
 };
 
@@ -3345,7 +3466,7 @@ function mainLoop() {
 	}
 
 
-	if (renderParameters.pause === false && startScreen.active === false) {
+	if (renderParameters.executeTransition === false && startScreen.active === false && renderParameters.pause === false) {
 
 
 		enemyCollisionBoxes = [];
@@ -3449,8 +3570,10 @@ function mainLoop() {
 
 	}
 
+	pauseScreen.loop();
 
-	if (renderParameters.pause === true) {
+
+	if (renderParameters.executeTransition === true) {
 		stageTransition.transition();
 	}
 
@@ -3504,6 +3627,14 @@ function render() {
 	userInterface.render();
 
 	stageTransition.render();
+
+	//if (renderParameters.pause === true) {
+
+		pauseScreen.render();
+
+	//}
+
+	cursorParameters.render();
 
 	if (startScreen.active === true) {
 
