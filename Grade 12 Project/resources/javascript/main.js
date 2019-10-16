@@ -891,12 +891,12 @@ var player = {
 
 		if (player.direction == 0) {
 
-			ctx.drawImage(playerResources[3], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset + (player.width * 0.5 * renderParameters.xScale)) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
+			ctx.drawImage(playerResources[3], player.armRightAngle * 40, player.state * 60, 40, 60, roundToPixel((renderParameters.windowWidth + renderParameters.xOffset + (player.width * 0.5 * renderParameters.xScale))), roundToPixel((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset)), player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
 
-			ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-			ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, roundToPixel((renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel((renderParameters.windowHeight + renderParameters.yOffset)), player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, roundToPixel((renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel((renderParameters.windowHeight + renderParameters.yOffset)), player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
-			ctx.drawImage(playerResources[2], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
+			ctx.drawImage(playerResources[2], player.armRightAngle * 40, player.state * 60, 40, 60, roundToPixel((renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset)), player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
 
 		}
 
@@ -2095,18 +2095,18 @@ var map = {
 
 					var tile = map.tileMapTexture[i] - 1;
 
-					ctx.drawImage(mapTextureResources[tile], Math.floor(((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
+					ctx.drawImage(mapTextureResources[tile], roundToPixel(((i % map.tileMapWidth * map.tileWidth - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel((((i - i % map.tileMapWidth) / map.tileMapWidth * map.tileHeight - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), map.tileWidth * renderParameters.xScale, map.tileHeight * renderParameters.yScale);
 				}
 			}
 		}
 
 		ctx.fillStyle = '#150a23';
 
-		ctx.fillRect(Math.floor(((-player.x + scenery1.width * map.tileWidth - map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
-		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(roundToPixel(((-player.x + scenery1.width * map.tileWidth - map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(roundToPixel(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
 
-		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((-player.y - scenery1.height * map.tileHeight + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
-		ctx.fillRect(Math.floor(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((-player.y + scenery1.height * map.tileHeight - map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(roundToPixel(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((-player.y - scenery1.height * map.tileHeight + map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
+		ctx.fillRect(roundToPixel(((-player.x - scenery1.width * map.tileWidth + map.tileWidth) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((-player.y + scenery1.height * map.tileHeight - map.tileHeight) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), scenery1.width * map.tileWidth * renderParameters.xScale * 3, scenery1.height * map.tileHeight * renderParameters.yScale);
 
 		ctx.closePath();
 
@@ -2364,7 +2364,7 @@ function NumberDisplay(x, y, value, type) {
 
 		for (var i = 0; i < this.characters.length; i = i + 1) {
 
-			ctx.drawImage(numberDisplayResources[0], this.characters[i] * 8, 10 * this.type, 8, 10, Math.floor((((this.x + i * 32 - (this.characters.length * 16)) - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y - (40 * this.ticker / this.time)) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, 32 * renderParameters.xScale, 40 * renderParameters.yScale);
+			ctx.drawImage(numberDisplayResources[0], this.characters[i] * 8, 10 * this.type, 8, 10, roundToPixel((((this.x + i * 32 - (this.characters.length * 16)) - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.y - player.y - (40 * this.ticker / this.time)) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), 32 * renderParameters.xScale, 40 * renderParameters.yScale);
 
 		}
 
@@ -2443,7 +2443,7 @@ var scenery1 = {
 
 	render: function() {
 		ctx.beginPath();
-		ctx.drawImage(backlayerResources[map.level], Math.floor((-player.x * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, Math.floor(scenery1.width * map.tileWidth * renderParameters.xScale / 2) * 2, Math.floor(scenery1.height * map.tileHeight * renderParameters.yScale / 2) * 2);
+		ctx.drawImage(backlayerResources[map.level], roundToPixel((-player.x * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel((-player.y * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), scenery1.width * map.tileWidth * renderParameters.xScale, scenery1.height * map.tileHeight * renderParameters.yScale);
 
 		ctx.closePath();
 	}
@@ -2478,6 +2478,10 @@ function windowResize() {
 	renderParameters.windowWidth = window.innerWidth;
 	renderParameters.windowHeight = window.innerHeight;
 
+	//Change game scale
+	renderParameters.xScale = window.innerWidth / 1920;
+	renderParameters.yScale = window.innerWidth / 1920;
+
 	document.width = String(window.innerWidth + 'px');
 	document.height = String(window.innerHeight + 'px');
 
@@ -2500,6 +2504,22 @@ var smoothCamera = {
 		renderParameters.yOffset = (renderParameters.yOffset - (renderParameters.yOffset - (renderParameters.smoothFactorY * player.yVelocity)) * renderParameters.followFactorY) + renderParameters.baseOffsetY;
 
 	}
+}
+
+function roundToPixel(value) {
+
+	var roundedValue;
+
+	//Optimal resolutions have a width of a multiple of 960! e.g(1080p, 1440p, etc.)
+
+	if (window.innerWidth % 960 == 0) {
+		roundedValue = Math.floor(value / 2) * 2;
+	} else {
+		roundedValue = value;
+	}
+
+	return roundedValue;
+
 }
 
 
@@ -2772,7 +2792,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 			for (var i = 0; i < this.trail.length / 2; i = i + 1) {
 
-				ctx.drawImage(ability0Resources[0], Math.floor(((this.trail[i * 2] - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.trail[i * 2 + 1] - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+				ctx.drawImage(ability0Resources[0], roundToPixel(((this.trail[i * 2] - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.trail[i * 2 + 1] - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 
 			}
 
@@ -2783,11 +2803,11 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 
 		if (this.type == 0) {
-			ctx.drawImage(ability0Resources[0], Math.floor(((this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+			ctx.drawImage(ability0Resources[0], roundToPixel(((this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 		}
 
 		if (this.type == 1) {
-			ctx.drawImage(enemy1ProjectileResources[0], (this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+			ctx.drawImage(enemy1ProjectileResources[0], roundToPixel((this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset), roundToPixel((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset), this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 		}
 
 		ctx.closePath();
@@ -3248,10 +3268,10 @@ function Enemy0(x, y, width, height) {
 		//Draw using enemy textures
 
 		if (this.direction == 0) {
-			ctx.drawImage(enemy0Resources[0], Math.floor(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[0], roundToPixel(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 		if (this.direction == 1) {
-			ctx.drawImage(enemy0Resources[1], Math.floor(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset) / 2 ) * 2, Math.floor(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, this.width * renderParameters.xScale, this.height * renderParameters.yScale);
+			ctx.drawImage(enemy0Resources[1], roundToPixel(((this.x - player.x) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.y - player.y) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.width * renderParameters.xScale, this.height * renderParameters.yScale);
 		}
 
 	  ctx.closePath();
