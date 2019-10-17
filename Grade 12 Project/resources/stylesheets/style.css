@@ -1,3 +1,8 @@
+@font-face {
+	font-family: 'pixelText';
+	src: url('pixelText.woff') format('woff');
+}
+
 html {
 	margin: 0px;
 

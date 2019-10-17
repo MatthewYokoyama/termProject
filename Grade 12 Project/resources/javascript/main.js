@@ -914,7 +914,7 @@ var player = {
 
 		if ((player.active1Ticker != 0 || cursorParameters.mouseDown3 === true) && renderParameters.pause === false) {
 
-			ctx.ellipse(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range * renderParameters.xScale, player.ability1Range * renderParameters.yScale, 0, 0, 2 * Math.PI);
+			ctx.ellipse(renderParameters.windowWidth + (player.width / 2 * renderParameters.xScale) + renderParameters.xOffset, renderParameters.windowHeight + (player.height / 2 * renderParameters.yScale) + renderParameters.yOffset, player.ability1Range * renderParameters.xScale, player.ability1Range * renderParameters.yScale, 0, 0, 2 * Math.PI);
 
 			ctx.lineWidth = 12 * renderParameters.xScale;
 			ctx.strokeStyle = '#081100';
@@ -2231,7 +2231,6 @@ var userInterface = {
 	}
 };
 
-
   ////////////////////////
  //////PAUSE SCREEN//////
 ////////////////////////
@@ -2240,7 +2239,17 @@ var pauseScreen = {
 
 	elementOpacityTarget: 1.0,
 
-	backgroundOpacityTarget: 0.5,
+	backgroundOpacityTarget: 0.7,
+
+	textOpacityTarget: 1.0,
+	textMargin: 90,
+
+	textContent: ['CONTINUE', 'RESTART LEVEL', 'SOUND', 'MAIN MENU'],
+
+	bannerWidth: 960,
+
+
+	fontSize: 30,
 
 	opacity: 0,
 
@@ -2250,7 +2259,7 @@ var pauseScreen = {
 
 			if (pauseScreen.opacity < 1) {
 
-				pauseScreen.opacity = pauseScreen.opacity + 0.05;
+				pauseScreen.opacity = pauseScreen.opacity + 0.04;
 
 				if (pauseScreen.opacity > 1) {
 					pauseScreen.opacity = 1;
@@ -2265,7 +2274,7 @@ var pauseScreen = {
 
 			if (pauseScreen.opacity > 0) {
 
-				pauseScreen.opacity = pauseScreen.opacity - 0.05;
+				pauseScreen.opacity = pauseScreen.opacity - 0.04;
 
 				if (pauseScreen.opacity < 0) {
 					pauseScreen.opacity = 0;
@@ -2289,6 +2298,30 @@ var pauseScreen = {
 
 		ctx.fillRect(0, 0, renderParameters.windowWidth * 2, renderParameters.windowHeight * 2);
 
+
+		ctx.globalAlpha = pauseScreen.textOpacityTarget * pauseScreen.opacity;
+
+		ctx.font = String(pauseScreen.fontSize * 4 * renderParameters.xScale + 'px pixelText');
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillStyle = '#FFFFFF';
+
+		ctx.fillText('DESCEND', renderParameters.windowWidth, (renderParameters.windowHeight * 0.6) * renderParameters.yScale);
+
+
+		ctx.font = String(pauseScreen.fontSize * renderParameters.xScale + 'px pixelText');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#FFFFFF';
+
+		for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
+
+			ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight * 0.9 + (pauseScreen.textMargin * i)) * renderParameters.yScale);
+
+		}
+
+		//Version
+		ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin * 0.5);
 
 		ctx.globalAlpha = 1;
 
