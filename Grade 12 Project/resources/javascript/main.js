@@ -902,12 +902,12 @@ var player = {
 
 		if (player.direction == 1) {
 
-			ctx.drawImage(playerResources[2], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset - (player.width * 1.3 * renderParameters.xScale)) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
+			ctx.drawImage(playerResources[2], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset - (player.width * 1.3 * renderParameters.xScale)) / 2) * 2, roundToPixel((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset)), player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
 
-			ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
-			ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, Math.floor((renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[0], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, roundToPixel((renderParameters.windowHeight + renderParameters.yOffset)), player.width * renderParameters.xScale, player.height * renderParameters.yScale);
+			ctx.drawImage(playerResources[1], player.animationFrame * 20, player.state * 40, 20, 40, Math.floor((renderParameters.windowWidth + renderParameters.xOffset) / 2) * 2, roundToPixel((renderParameters.windowHeight + renderParameters.yOffset)), player.width * renderParameters.xScale, player.height * renderParameters.yScale);
 
-			ctx.drawImage(playerResources[3], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset - (player.width * 1 * renderParameters.xScale)) / 2) * 2, Math.floor((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset) / 2) * 2, player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
+			ctx.drawImage(playerResources[3], player.armRightAngle * 40, player.state * 60, 40, 60, Math.floor((renderParameters.windowWidth + renderParameters.xOffset - (player.width * 1 * renderParameters.xScale)) / 2) * 2, roundToPixel((((player.armOffset[player.state][player.animationFrame] - (player.height / 2)) * renderParameters.yScale) + renderParameters.windowHeight + renderParameters.yOffset)), player.width * 2 * renderParameters.xScale, player.height * 1.5 * renderParameters.yScale);
 
 		}
 
@@ -916,11 +916,11 @@ var player = {
 
 			ctx.ellipse(renderParameters.windowWidth + renderParameters.xOffset + player.width / 2, renderParameters.windowHeight + renderParameters.yOffset + player.height / 2, player.ability1Range * renderParameters.xScale, player.ability1Range * renderParameters.yScale, 0, 0, 2 * Math.PI);
 
-			ctx.lineWidth = 12;
+			ctx.lineWidth = 12 * renderParameters.xScale;
 			ctx.strokeStyle = '#081100';
 			ctx.stroke();
 
-			ctx.lineWidth = 5;
+			ctx.lineWidth = 5 * renderParameters.xScale;
 			ctx.strokeStyle = '#6fb032';
 			ctx.stroke();
 		}
@@ -2199,33 +2199,33 @@ var userInterface = {
 		ctx.beginPath();
 
 		for (var i = 0; i < 3; ++i) {
-			ctx.drawImage(userInterfaceResources[i], (i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight - userInterface.boxSpacing, userInterface.boxWidth, userInterface.boxHeight);
+			ctx.drawImage(userInterfaceResources[i], roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight + userInterface.boxSpacing) * renderParameters.yScale)), (userInterface.boxWidth * renderParameters.xScale), (userInterface.boxHeight * renderParameters.yScale));
 		}
 
 		//Draw ability cooldown indicator
 		ctx.fillStyle = '#FFFFFF';
 
-		ctx.fillRect(userInterface.boxSpacing + userInterface.abilityBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxSpacing - userInterface.abilityBorderWidth, userInterface.boxWidth - userInterface.abilityBorderWidth * 2, -(userInterface.boxHeight - userInterface.abilityBorderWidth * 2) * (player.coolDown0Ticker / player.coolDown0));
+		ctx.fillRect(roundToPixel((userInterface.boxSpacing + userInterface.abilityBorderWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxSpacing + userInterface.abilityBorderWidth) * renderParameters.yScale)), roundToPixel((userInterface.boxWidth - userInterface.abilityBorderWidth * 2) * renderParameters.xScale), roundToPixel((-(userInterface.boxHeight - userInterface.abilityBorderWidth * 2) * (player.coolDown0Ticker / player.coolDown0)) * renderParameters.yScale));
 
-		ctx.fillRect(2 * userInterface.boxSpacing + userInterface.boxWidth + userInterface.abilityBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxSpacing - userInterface.abilityBorderWidth, userInterface.boxWidth - userInterface.abilityBorderWidth * 2, -(userInterface.boxHeight - userInterface.abilityBorderWidth * 2) * (player.coolDown1Ticker / player.coolDown1));
+		ctx.fillRect(roundToPixel((2 * userInterface.boxSpacing + userInterface.boxWidth + userInterface.abilityBorderWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxSpacing + userInterface.abilityBorderWidth) * renderParameters.yScale)), roundToPixel((userInterface.boxWidth - userInterface.abilityBorderWidth * 2) * renderParameters.xScale), roundToPixel((-(userInterface.boxHeight - userInterface.abilityBorderWidth * 2) * (player.coolDown1Ticker / player.coolDown1)) * renderParameters.yScale));
 
 		//Draw Healthbar
 
 		ctx.fillStyle = '#000000';
-		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing, userInterface.healthWidth, userInterface.healthHeight);
+		ctx.fillRect(roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing) * renderParameters.yScale)), roundToPixel(userInterface.healthWidth * renderParameters.xScale), roundToPixel(userInterface.healthHeight * renderParameters.yScale));
 
 		//Trailing gold health
 		userInterface.apparentHealthWidth = userInterface.apparentHealthWidth - (((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) - ((userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100))) * 0.05);
 
 		ctx.fillStyle = '#FFFF00';
-		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.healthBorderWidth, (userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2), userInterface.healthHeight - userInterface.healthBorderWidth * 2);
+		ctx.fillRect(roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing - userInterface.healthBorderWidth) * renderParameters.yScale)), roundToPixel((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) * renderParameters.xScale), roundToPixel((userInterface.healthHeight - userInterface.healthBorderWidth * 2) * renderParameters.yScale));
 
 		ctx.fillStyle = '#FF0000';
-		ctx.fillRect((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing  + userInterface.healthBorderWidth, (userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100), userInterface.healthHeight - userInterface.healthBorderWidth * 2);
+		ctx.fillRect(roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing - userInterface.healthBorderWidth) * renderParameters.yScale)), roundToPixel(((userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100)) * renderParameters.xScale), roundToPixel((userInterface.healthHeight - userInterface.healthBorderWidth * 2)) * renderParameters.yScale);
 
-		ctx.drawImage(userInterfaceResources[i], (i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth, renderParameters.windowHeight * 2 - userInterface.boxHeight + userInterface.boxHeight / 4 - userInterface.boxSpacing, userInterface.healthWidth, userInterface.healthHeight);
+		ctx.drawImage(userInterfaceResources[i], roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing) * renderParameters.yScale)), roundToPixel(userInterface.healthWidth * renderParameters.xScale), roundToPixel(userInterface.healthHeight * renderParameters.yScale));
 
-		ctx.drawImage(userInterfaceResources[5], renderParameters.windowWidth * 2 + userInterface.playerIconXOffset, renderParameters.windowHeight * 2 + userInterface.playerIconYOffset, userInterface.playerIconWidth, userInterface.playerIconHeight);
+		ctx.drawImage(userInterfaceResources[5], roundToPixel(renderParameters.windowWidth * 2 + (userInterface.playerIconXOffset * renderParameters.xScale)), roundToPixel(renderParameters.windowHeight * 2 + (userInterface.playerIconYOffset * renderParameters.yScale)), roundToPixel(userInterface.playerIconWidth * renderParameters.xScale), roundToPixel(userInterface.playerIconHeight * renderParameters.yScale));
 
 		ctx.closePath();
 	}
@@ -3284,6 +3284,7 @@ function Enemy1(x, y, width, height) {
 	this.width = width;
 	this.height = height;
 	this.angle = 10 * Math.random();
+
 	this.xTarget = 0;
 	this.yTarget = 0;
 	this.health = 40;
@@ -3300,7 +3301,9 @@ function Enemy1(x, y, width, height) {
 	this.xTracker = 0;
 	this.yTracker = 0;
 	this.targetLocked = false;
+
 	this.delete = false;
+
 	this.enemyID = 0;
 	this.targetID = [];
 
@@ -3445,6 +3448,8 @@ function initializeObjects() {
 	map.generateMap();
 	map.generateMapTextures();
 
+	windowResize()
+
 	window.requestAnimationFrame(gameTick);
 	window.requestAnimationFrame(render);
 
@@ -3483,6 +3488,8 @@ function mainLoop() {
 	if (startScreen.active === true) {
 		keystrokelistener.logKeystrokes();
 		startScreen.loop();
+
+		renderParameters.pause = false;
 	}
 
 
@@ -3645,14 +3652,8 @@ function render() {
 	}
 
 	userInterface.render();
-
 	stageTransition.render();
-
-	//if (renderParameters.pause === true) {
-
-		pauseScreen.render();
-
-	//}
+	pauseScreen.render();
 
 	cursorParameters.render();
 
