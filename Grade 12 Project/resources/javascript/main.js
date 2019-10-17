@@ -2241,10 +2241,21 @@ var pauseScreen = {
 
 	backgroundOpacityTarget: 0.7,
 
+	textBoxWidth: 300,
+
 	textOpacityTarget: 1.0,
-	textMargin: 90,
+	textMargin: 45,
 
 	textContent: ['CONTINUE', 'RESTART LEVEL', 'SOUND', 'MAIN MENU'],
+
+	textFunction: {
+
+		1: function() {renderParameters.pause = false;},
+		2: function() {renderParameters.pause = false;},
+		3: function() {renderParameters.pause = false;},
+		4: function() {renderParameters.pause = false;}
+
+	},
 
 	bannerWidth: 960,
 
@@ -2263,6 +2274,20 @@ var pauseScreen = {
 
 				if (pauseScreen.opacity > 1) {
 					pauseScreen.opacity = 1;
+				}
+
+			}
+
+			for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
+
+				if (
+
+					cursorParameters.x * 2 > renderParameters.windowWidth - (pauseScreen.textBoxWidth * 0.5 * renderParameters.xScale) &&
+					cursorParameters.x * 2 < renderParameters.windowWidth + (pauseScreen.textBoxWidth * 0.5 * renderParameters.xScale)
+
+
+				) {
+					console.log(i);
 				}
 
 			}
@@ -2290,46 +2315,42 @@ var pauseScreen = {
 
 	render: function() {
 
-		if (pauseScreen.opacity != 0) {
+		ctx.beginPath();
 
-			ctx.beginPath();
+		ctx.globalAlpha = pauseScreen.backgroundOpacityTarget * pauseScreen.opacity;
 
-			ctx.globalAlpha = pauseScreen.backgroundOpacityTarget * pauseScreen.opacity;
+		ctx.fillStyle = '#000000';
 
-			ctx.fillStyle = '#000000';
-
-			ctx.fillRect(0, 0, renderParameters.windowWidth * 2, renderParameters.windowHeight * 2);
+		ctx.fillRect(0, 0, renderParameters.windowWidth * 2, renderParameters.windowHeight * 2);
 
 
-			ctx.globalAlpha = pauseScreen.textOpacityTarget * pauseScreen.opacity;
+		ctx.globalAlpha = pauseScreen.textOpacityTarget * pauseScreen.opacity;
 
-			ctx.font = String(pauseScreen.fontSize * 4 * renderParameters.xScale + 'px pixelText');
-			ctx.textAlign = 'center';
-			ctx.textBaseline = 'middle';
-			ctx.fillStyle = '#FFFFFF';
+		ctx.font = String(pauseScreen.fontSize * 4 * renderParameters.xScale + 'px pixelText');
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillStyle = '#FFFFFF';
 
-			ctx.fillText('DESCEND', renderParameters.windowWidth, (renderParameters.windowHeight * 0.6) * renderParameters.yScale);
+		ctx.fillText('DESCEND', renderParameters.windowWidth, (renderParameters.windowHeight * 0.6) * renderParameters.yScale);
 
 
-			ctx.font = String(pauseScreen.fontSize * renderParameters.xScale + 'px pixelText');
-	    ctx.textAlign = 'center';
-	    ctx.textBaseline = 'middle';
-	    ctx.fillStyle = '#FFFFFF';
+		ctx.font = String(pauseScreen.fontSize * renderParameters.xScale + 'px pixelText');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#FFFFFF';
 
-			for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
+		for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
 
-				ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight * 0.9 + (pauseScreen.textMargin * i)) * renderParameters.yScale);
-
-			}
-
-			//Version
-			ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin * 0.5);
-
-			ctx.globalAlpha = 1;
-
-			ctx.closePath();
+			ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight + ((pauseScreen.textMargin + pauseScreen.fontSize) * (i - (pauseScreen.textContent.length / 2))) + pauseScreen.textMargin) * renderParameters.yScale);
 
 		}
+
+		//Version
+		ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin * 0.5);
+
+		ctx.globalAlpha = 1;
+
+		ctx.closePath();
 
 	}
 
