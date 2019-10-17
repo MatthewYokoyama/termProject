@@ -2290,42 +2290,47 @@ var pauseScreen = {
 
 	render: function() {
 
-		ctx.beginPath();
+		if (pauseScreen.opacity != 0) {
 
-		ctx.globalAlpha = pauseScreen.backgroundOpacityTarget * pauseScreen.opacity;
+			ctx.beginPath();
 
-		ctx.fillStyle = '#000000';
+			ctx.globalAlpha = pauseScreen.backgroundOpacityTarget * pauseScreen.opacity;
 
-		ctx.fillRect(0, 0, renderParameters.windowWidth * 2, renderParameters.windowHeight * 2);
+			ctx.fillStyle = '#000000';
 
-
-		ctx.globalAlpha = pauseScreen.textOpacityTarget * pauseScreen.opacity;
-
-		ctx.font = String(pauseScreen.fontSize * 4 * renderParameters.xScale + 'px pixelText');
-		ctx.textAlign = 'center';
-		ctx.textBaseline = 'middle';
-		ctx.fillStyle = '#FFFFFF';
-
-		ctx.fillText('DESCEND', renderParameters.windowWidth, (renderParameters.windowHeight * 0.6) * renderParameters.yScale);
+			ctx.fillRect(0, 0, renderParameters.windowWidth * 2, renderParameters.windowHeight * 2);
 
 
-		ctx.font = String(pauseScreen.fontSize * renderParameters.xScale + 'px pixelText');
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#FFFFFF';
+			ctx.globalAlpha = pauseScreen.textOpacityTarget * pauseScreen.opacity;
 
-		for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
+			ctx.font = String(pauseScreen.fontSize * 4 * renderParameters.xScale + 'px pixelText');
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillStyle = '#FFFFFF';
 
-			ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight * 0.9 + (pauseScreen.textMargin * i)) * renderParameters.yScale);
+			ctx.fillText('DESCEND', renderParameters.windowWidth, (renderParameters.windowHeight * 0.6) * renderParameters.yScale);
+
+
+			ctx.font = String(pauseScreen.fontSize * renderParameters.xScale + 'px pixelText');
+	    ctx.textAlign = 'center';
+	    ctx.textBaseline = 'middle';
+	    ctx.fillStyle = '#FFFFFF';
+
+			for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
+
+				ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight * 0.9 + (pauseScreen.textMargin * i)) * renderParameters.yScale);
+
+			}
+
+			//Version
+			ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin * 0.5);
+
+			ctx.globalAlpha = 1;
+
+			ctx.closePath();
 
 		}
 
-		//Version
-		ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin * 0.5);
-
-		ctx.globalAlpha = 1;
-
-		ctx.closePath();
 	}
 
 }
