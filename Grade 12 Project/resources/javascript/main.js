@@ -162,7 +162,7 @@ var renderParameters = {
 	yScale: 1,
 
 	xOffset: 0,
-	yOffset: -40,
+	yOffset: 0,
 	baseOffsetX: -5,
 	baseOffsetY: 2,
 	smoothFactorX: 1.2,
@@ -175,8 +175,8 @@ var renderParameters = {
 	pause: false,
 	pauseToggle: false,
 
-
 	executeTransition: false,
+	nextLevel: false
 };
 
 var cursorParameters = {
@@ -189,7 +189,11 @@ var cursorParameters = {
 	click: true,
 
 	render: function() {
-		ctx.drawImage(userInterfaceResources[4], cursorParameters.x * 2 - (40 * renderParameters.xScale), cursorParameters.y * 2 - (40 * renderParameters.yScale), 80 * renderParameters.xScale, 80 * renderParameters.yScale);
+		if (renderParameters.pause === false) {
+			ctx.drawImage(userInterfaceResources[4], 0, 0, 20, 20, cursorParameters.x * 2 - (40 * renderParameters.xScale), cursorParameters.y * 2 - (40 * renderParameters.yScale), 80 * renderParameters.xScale, 80 * renderParameters.yScale);
+		} else {
+			ctx.drawImage(userInterfaceResources[4], 20, 0, 20, 20, cursorParameters.x * 2 - (40 * renderParameters.xScale), cursorParameters.y * 2 - (40 * renderParameters.yScale), 80 * renderParameters.xScale, 80 * renderParameters.yScale);
+		}
 	}
 
 };
@@ -229,6 +233,8 @@ var player = {
 	collision: false,
 
 	health: 100,
+	healthMax: 100,
+
 	attackDamage: 10,
 
 	score: 0,
@@ -481,6 +487,7 @@ var player = {
 		}
 		return player.collision;
 	},
+
 	collisionCheckBlock: function() {
 		for (var i = 0; i <= (player.width / map.tileWidth + 1) * (player.height / map.tileHeight) - 1; i = i + 1) {
 			var tileCheck = ((player.x - player.x % map.tileWidth) / map.tileWidth) + ((player.y - player.y % map.tileHeight) / map.tileHeight * map.tileMapWidth) + (i % (player.width / map.tileWidth + 1)) + (map.tileMapWidth * (i - i % (player.width / map.tileWidth + 1)) / (player.width / map.tileWidth + 1));
@@ -489,6 +496,9 @@ var player = {
 					if ((-(player.x - tileCheck % map.tileMapWidth * map.tileWidth - map.tileWidth)) - (map.tileHeight - ((tileCheck - tileCheck % map.tileMapWidth) / map.tileMapWidth * map.tileHeight + map.tileHeight - (player.y))) > 0) {
 
 						//executeTransitions the game for stage transition
+
+						renderParameters.nextLevel = true;
+
 						renderParameters.executeTransition = true;
 
 					}
@@ -507,10 +517,13 @@ var player = {
 
 	//Ability cool down Data
 	coolDown0Ticker: 0,
-	coolDown0: 25,
+	coolDown0: 28,
 	ability0KeyTap: false,
 
-	ability0Damage: 15,
+	ability0BaseDamage: 40,
+	ability0DamageVariance: 10,
+
+	ability0Damage: 0,
 
 	ability0: function() {
 		//Decrease cooldown timer
@@ -520,9 +533,13 @@ var player = {
 
 		if (cursorParameters.mouseDown1 === false) {
 			player.ability0KeyTap = true;
-		} else if (cursorParameters.mouseDown1 === true && player.coolDown0Ticker <= 0 && player.wallSlide === false) {
-			player.ability0KeyTap = false;
-			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40 * -Math.cos(cursorParameters.angle), 40 * -Math.sin(cursorParameters.angle), true, false, player.width / 2, player.height / 3.5, 14, 0 , this.ability0Damage));
+		} else if (cursorParameters.mouseDown1 === true && player.coolDown0Ticker <= 0 && player.wallSlide === false && player.ability0KeyTap === true) {
+			//player.ability0KeyTap = false;
+
+			//Calculate damage total
+			player.ability0Damage = Math.round((player.ability0BaseDamage + ((Math.random() * player.ability0DamageVariance) - player.ability0DamageVariance * 0.5)));
+
+			bullets.push(new Bullet(player.x, player.y, cursorParameters.angle, 40 * -Math.cos(cursorParameters.angle), 40 * -Math.sin(cursorParameters.angle), true, false, player.width / 2, player.height / 3.5, 14, 0 , player.ability0Damage));
 
 			//Sound effect
 			const newAudio = abilitySounds[0].cloneNode();
@@ -534,7 +551,7 @@ var player = {
 
 	//Ability cool down Data
 	coolDown1Ticker: 0,
-	coolDown1: 500,
+	coolDown1: 600,
 	ability1KeyTap: false,
 
 	active1State: false,
@@ -551,7 +568,10 @@ var player = {
 
 	projectileCounter: 0,
 
-	ability1Damage: 30,
+	ability1BaseDamage: 40,
+	ability1DamageVariance: 10,
+
+	ability1Damage: 0,
 
 	ability1: function() {
 
@@ -624,6 +644,9 @@ var player = {
 				if (player.projectileCounter < player.enemyTargetNumber && player.enemyTarget.length != 0) {
 
 					enemies[player.enemyTarget[player.projectileCounter]].targetID.push(player.targetIDs.length);
+
+					//Calculate damage total
+					player.ability1Damage = Math.round((player.ability1BaseDamage + ((Math.random() * player.ability1DamageVariance) - player.ability1DamageVariance * 0.5)));
 
 					missiles.push(new Missile(player.x, player.y, 10 * -Math.cos(cursorParameters.angle) + player.xVelocity, 10 * -Math.sin(cursorParameters.angle) + player.yVelocity - 200, 40, (cursorParameters.angle - Math.PI / 2 + Math.PI * Math.random()), player.targetIDs.length, this.ability1Damage));
 
@@ -2181,6 +2204,7 @@ var userInterface = {
 	boxSpacing: 40,
 	abilityBorderWidth: 20,
 
+	healthBoxWidth: 960,
 	healthWidth: 960,
 	apparentHealthWidth: 960,
 	healthHeight: 80,
@@ -2215,17 +2239,24 @@ var userInterface = {
 		ctx.fillRect(roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing) * renderParameters.yScale)), roundToPixel(userInterface.healthWidth * renderParameters.xScale), roundToPixel(userInterface.healthHeight * renderParameters.yScale));
 
 		//Trailing gold health
-		userInterface.apparentHealthWidth = userInterface.apparentHealthWidth - (((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) - ((userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100))) * 0.05);
+		userInterface.apparentHealthWidth = userInterface.apparentHealthWidth - (((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) - ((userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / player.healthMax))) * 0.05);
 
 		ctx.fillStyle = '#FFFF00';
 		ctx.fillRect(roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing - userInterface.healthBorderWidth) * renderParameters.yScale)), roundToPixel((userInterface.apparentHealthWidth - userInterface.healthBorderWidth * 2) * renderParameters.xScale), roundToPixel((userInterface.healthHeight - userInterface.healthBorderWidth * 2) * renderParameters.yScale));
 
 		ctx.fillStyle = '#FF0000';
-		ctx.fillRect(roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing - userInterface.healthBorderWidth) * renderParameters.yScale)), roundToPixel(((userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / 100)) * renderParameters.xScale), roundToPixel((userInterface.healthHeight - userInterface.healthBorderWidth * 2)) * renderParameters.yScale);
+		ctx.fillRect(roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBorderWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing - userInterface.healthBorderWidth) * renderParameters.yScale)), roundToPixel(((userInterface.healthWidth - userInterface.healthBorderWidth * 2) * (player.health / player.healthMax)) * renderParameters.xScale), roundToPixel((userInterface.healthHeight - userInterface.healthBorderWidth * 2)) * renderParameters.yScale);
 
 		ctx.drawImage(userInterfaceResources[i], roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing) * renderParameters.yScale)), roundToPixel(userInterface.healthWidth * renderParameters.xScale), roundToPixel(userInterface.healthHeight * renderParameters.yScale));
 
 		ctx.drawImage(userInterfaceResources[5], roundToPixel(renderParameters.windowWidth * 2 + (userInterface.playerIconXOffset * renderParameters.xScale)), roundToPixel(renderParameters.windowHeight * 2 + (userInterface.playerIconYOffset * renderParameters.yScale)), roundToPixel(userInterface.playerIconWidth * renderParameters.xScale), roundToPixel(userInterface.playerIconHeight * renderParameters.yScale));
+
+		ctx.font = String(40 * renderParameters.xScale + 'px pixelText');
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillStyle = '#FFFFFF';
+
+		ctx.fillText(String(Math.round(player.health) + '/' + Math.round(player.healthMax)), roundToPixel(((i + 1) * userInterface.boxSpacing + i * userInterface.boxWidth + userInterface.healthBoxWidth * 0.5) * renderParameters.xScale), roundToPixel(renderParameters.windowHeight * 2 - ((userInterface.boxHeight - userInterface.boxHeight / 4 + userInterface.boxSpacing - userInterface.healthHeight * 0.5) * renderParameters.yScale)));
 
 		ctx.closePath();
 	}
@@ -2248,15 +2279,6 @@ var pauseScreen = {
 
 	textContent: ['CONTINUE', 'RESTART LEVEL', 'SOUND', 'MAIN MENU'],
 
-	textFunction: {
-
-		1: function() {renderParameters.pause = false;},
-		1: function() {renderParameters.pause = false;},
-		2: function() {renderParameters.pause = false;},
-		3: function() {renderParameters.pause = false;}
-
-	},
-
 	textHighlight: [],
 
 	bannerWidth: 960,
@@ -2267,6 +2289,23 @@ var pauseScreen = {
 	opacity: 0,
 
 	loop: function() {
+
+		if (keystrokelistener.escape === true) {
+
+			if (renderParameters.pauseToggle === false) {
+				renderParameters.pauseToggle = true;
+
+				if (renderParameters.pause === false && stageTransition.transitionState === false) {
+					renderParameters.pause = true;
+				} else if (renderParameters.pause === true) {
+					renderParameters.pause = false;
+				}
+
+			}
+
+		} else {
+			renderParameters.pauseToggle = false;
+		}
 
 		if (renderParameters.pause === true) {
 
@@ -2298,10 +2337,15 @@ var pauseScreen = {
 
 					if (cursorParameters.mouseDown1 === true) {
 
+						player.ability0KeyTap = false;
+
+						//Button functionality
 						if (i == 0) {
 							renderParameters.pause = false;
 						}
-
+						if (i == 1) {
+							renderParameters.executeTransition = true;
+						}
 
 					}
 
@@ -2362,7 +2406,7 @@ var pauseScreen = {
 		for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
 
 			if (pauseScreen.textHighlight[i] === true) {
-				ctx.fillStyle = '#FF00FF';
+				ctx.fillStyle = '#FFFF4d';
 			} else {
 				ctx.fillStyle = '#FFFFFF';
 			}
@@ -2374,12 +2418,35 @@ var pauseScreen = {
 		ctx.fillStyle = '#FFFFFF';
 
 		//Version
-		ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin * 0.5);
+		ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin);
 
 		ctx.globalAlpha = 1;
 
 		ctx.closePath();
 
+	}
+
+}
+
+var restartLevel = {
+
+	restartPlayerHealth: 0,
+	restartPlayerCoolDown0ticker: 0,
+	restartPlayerCoolDown1ticker: 0,
+	//restartPlayerCoolDown2ticker: 0,
+
+	getRestartData: function() {
+		restartLevel.restartPlayerHealth = player.health;
+		restartLevel.restartPlayerCoolDown0ticker = player.coolDown0Ticker;
+		restartLevel.restartPlayerCoolDown1ticker = player.coolDown1Ticker;
+		//restartLevel.restartPlayerCoolDown2ticker = player.coolDown2Ticker;
+	},
+
+	restart: function() {
+		player.health = restartLevel.restartPlayerHealth;
+		player.coolDown0Ticker = restartLevel.restartPlayerCoolDown0ticker;
+		player.coolDown1Ticker = restartLevel.restartPlayerCoolDown1ticker;
+		//player.coolDown2Ticker = restartLevel.restartPlayerCoolDown2ticker;
 	}
 
 }
@@ -2474,33 +2541,67 @@ function NumberDisplay(x, y, value, type) {
 var stageTransition = {
 	ticker: 0,
 	time: 70,
-	x: 0,
-	width: 0,
 
+	x: 0,
+
+	transitionState: false,
+
+
+	loop: function() {
+
+		if (renderParameters.executeTransition === true) {
+
+			stageTransition.transitionState = true;
+
+			renderParameters.pause = false;
+
+			if (stageTransition.x > renderParameters.windowWidth * 2) {
+				stageTransition.transition();
+			}
+
+		}
+
+		if (stageTransition.transitionState === true) {
+
+			stageTransition.x = stageTransition.x + (140 * renderParameters.xScale);
+
+			if (stageTransition.x > renderParameters.windowWidth * 6) {
+
+				stageTransition.x = 0;
+				stageTransition.transitionState = false;
+
+			}
+
+		}
+
+	},
 
 	transition: function() {
 
-		stageTransition.ticker = stageTransition.ticker + 1;
-
-		stageTransition.x = 0;
-		stageTransition.width = 2 * canvas.width * (stageTransition.ticker / stageTransition.time)
-
-		if (stageTransition.time <= stageTransition.ticker) {
-			stageTransition.ticker = 0;
-			stageTransition.width = 0;
-
+		if (renderParameters.nextLevel === true) {
+			renderParameters.nextLevel = false;
 			map.level = map.level + 1;
-			renderParameters.executeTransition = false;
 
-			map.generateMap();
-			map.generateMapTextures();
+			restartLevel.getRestartData();
+		} else {
+
+			restartLevel.restart();
+
 		}
+
+		renderParameters.executeTransition = false;
+		renderParameters.pause = false;
+
+		map.generateMap();
+		map.generateMapTextures();
 	},
 
 	render: function() {
 		ctx.beginPath();
+
 		ctx.fillStyle = '#000000'
-		ctx.fillRect(stageTransition.x, 0, stageTransition.width, 2 * canvas.height);
+		ctx.fillRect(stageTransition.x - renderParameters.windowWidth * 4, 0, renderParameters.windowWidth * 4, renderParameters.windowHeight * 2);
+
 		ctx.closePath();
 	}
 
@@ -2701,17 +2802,6 @@ var keystrokelistener = {
 
 			if (charCode === 27) {
 				keystrokelistener.escape = true;
-
-				if (renderParameters.pauseToggle === false) {
-					renderParameters.pauseToggle = true;
-
-					if (renderParameters.pause === false) {
-						renderParameters.pause = true;
-					} else if (renderParameters.pause === true) {
-						renderParameters.pause = false;
-					}
-
-				}
 			}
 
     };
@@ -2738,8 +2828,6 @@ var keystrokelistener = {
 
 			if (charCode === 27) {
 				keystrokelistener.escape = false;
-
-				renderParameters.pauseToggle = false;
 			}
 
     };
@@ -2859,7 +2947,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	this.attackPlayer = function() {
 		if (this.x >= player.x && this.x <= player.x + player.width && this.y >= player.y && this.y <= player.y + player.height) {
 			if (this.enemy === true) {
-				player.damageToPlayer.push(-1);
+				player.damageToPlayer.push(-this.damage);
 
 				if (this.xVelocity > 0) {
 					player.damageToPlayer.push(20);
@@ -3374,7 +3462,7 @@ function Enemy1(x, y, width, height) {
 
 	this.xTarget = 0;
 	this.yTarget = 0;
-	this.health = 40;
+	this.health = 100;
 
 	this.damageToEnemy = [];
 	this.damageTotal = 0;
@@ -3453,7 +3541,7 @@ function Enemy1(x, y, width, height) {
 		if (this.coolDownTicker <= 0) {
 			if (Math.abs((this.x + this.width / 2) - (player.x + player.width / 2)) > this.attackDistance / 2 && this.targetLocked === true) {
 
-				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10 * -Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), 10 * -Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2), 10)), false, true, this.width / 2, this.height / 2, 20, 1));
+				bullets.push(new Bullet(this.x, this.y, Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2)), 10 * -Math.cos(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2))), 10 * -Math.sin(Math.atan2((this.y + this.height / 2) - (player.y + player.height / 2), (this.x + this.width / 2) - (player.x + player.width / 2), 10)), false, true, this.width / 2, this.height / 2, 20, 1, 8));
 
 				this.coolDownTicker = this.coolDown;
 			}
@@ -3534,6 +3622,8 @@ function initializeObjects() {
 
 	map.generateMap();
 	map.generateMapTextures();
+
+	restartLevel.getRestartData();
 
 	windowResize()
 
@@ -3685,11 +3775,7 @@ function mainLoop() {
 	}
 
 	pauseScreen.loop();
-
-
-	if (renderParameters.executeTransition === true) {
-		stageTransition.transition();
-	}
+	stageTransition.loop();
 
 }
 
@@ -3739,10 +3825,9 @@ function render() {
 	}
 
 	userInterface.render();
-	stageTransition.render();
 	pauseScreen.render();
-
 	cursorParameters.render();
+	stageTransition.render();
 
 	if (startScreen.active === true) {
 
