@@ -2329,8 +2329,8 @@ var pauseScreen = {
 					cursorParameters.x * 2 > renderParameters.windowWidth - (pauseScreen.textBoxWidth * 0.5 * renderParameters.xScale) &&
 					cursorParameters.x * 2 < renderParameters.windowWidth + (pauseScreen.textBoxWidth * 0.5 * renderParameters.xScale) &&
 
-					cursorParameters.y * 2 > (renderParameters.windowHeight + ((pauseScreen.textMargin + pauseScreen.fontSize) * (i - (pauseScreen.textContent.length / 2))) + pauseScreen.textMargin / 2) * renderParameters.yScale &&
-					cursorParameters.y * 2 < (renderParameters.windowHeight + ((pauseScreen.textMargin + pauseScreen.fontSize) * (i - (pauseScreen.textContent.length / 2) + 1)) + pauseScreen.textMargin / 2) * renderParameters.yScale
+					cursorParameters.y * 2 > (renderParameters.windowHeight + (((pauseScreen.textMargin + pauseScreen.fontSize) * renderParameters.yScale) * (i - (pauseScreen.textContent.length / 2) - 0.5)) + pauseScreen.textMargin) &&
+					cursorParameters.y * 2 < (renderParameters.windowHeight + (((pauseScreen.textMargin + pauseScreen.fontSize) * renderParameters.yScale) * (i - (pauseScreen.textContent.length / 2) + 0.5)) + pauseScreen.textMargin)
 
 				) {
 					pauseScreen.textHighlight.push(true);
@@ -2411,7 +2411,7 @@ var pauseScreen = {
 				ctx.fillStyle = '#FFFFFF';
 			}
 
-			ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight + ((pauseScreen.textMargin + pauseScreen.fontSize) * (i - (pauseScreen.textContent.length / 2))) + pauseScreen.textMargin) * renderParameters.yScale);
+			ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight + (((pauseScreen.textMargin + pauseScreen.fontSize) * renderParameters.yScale) * (i - (pauseScreen.textContent.length / 2))) + pauseScreen.textMargin));
 
 		}
 
@@ -2540,7 +2540,6 @@ function NumberDisplay(x, y, value, type) {
 
 var stageTransition = {
 	ticker: 0,
-	time: 70,
 
 	x: 0,
 
@@ -2880,7 +2879,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 	this.delete = false;
 
 	this.trail = [];
-	this.trailLength = 0;
+	this.trailLength = 200;
 
 	this.trailStyle0 = 0;
 
@@ -2967,9 +2966,13 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 			for (var i = 0; i < this.trail.length / 2; i = i + 1) {
 
-				ctx.drawImage(ability0Resources[0], roundToPixel(((this.trail[i * 2] - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.trail[i * 2 + 1] - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+				ctx.globalAlpha = i / (this.trail.length / 2) * 0.1;
+
+				ctx.drawImage(ability0Resources[0], roundToPixel(((this.trail[i * 2] - player.x - this.radius * (i / (this.trail.length / 2)) + (player.width / 2)) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.trail[i * 2 + 1] - player.y - this.radius * (i / (this.trail.length / 2))) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.radius * 2 * renderParameters.xScale * (i / (this.trail.length / 2)), this.radius * 2 * renderParameters.yScale * (i / (this.trail.length / 2)));
 
 			}
+
+			ctx.globalAlpha = 1;
 
 		}
 
@@ -2978,7 +2981,7 @@ function Bullet(x, y, angle, xVelocityInitial, yVelocityInitial, gravity, enemy,
 
 
 		if (this.type == 0) {
-			ctx.drawImage(ability0Resources[0], roundToPixel(((this.x - player.x - this.radius) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
+			ctx.drawImage(ability0Resources[0], roundToPixel(((this.x - player.x - this.radius + (player.width / 2)) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset)), roundToPixel(((this.y - player.y - this.radius) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset)), this.radius * 2 * renderParameters.xScale, this.radius * 2 * renderParameters.yScale);
 		}
 
 		if (this.type == 1) {
@@ -3010,7 +3013,7 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 	this.target = target;
 
 	this.trail = [];
-	this.trailLength = 10;
+	this.trailLength = 1000;
 
 	this.delete = false;
 
@@ -3089,10 +3092,13 @@ function Missile(x, y, xVelocity, yVelocity, velocity, angle, target, damage) {
 
 		for (var i = 0; i < this.trail.length / 2; i = i + 1) {
 
-			ctx.drawImage(ability1Resources[0], (this.trail[i * 2] - player.x - 20) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.trail[i * 2 + 1] - player.y - 20) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
+			ctx.globalAlpha = i / (this.trail.length / 2) * 0.1;
+
+			ctx.drawImage(ability1Resources[0], (this.trail[i * 2] - player.x - 20 * (i / (this.trail.length / 2))) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.trail[i * 2 + 1] - player.y - 20) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale * (i / (this.trail.length / 2)), 40 * renderParameters.yScale * (i / (this.trail.length / 2)));
 
 		}
 
+		ctx.globalAlpha = 1;
 
 		ctx.drawImage(ability1Resources[0], (this.x - player.x - 20) * renderParameters.xScale + renderParameters.windowWidth + renderParameters.xOffset, (this.y - player.y - 20) * renderParameters.yScale + renderParameters.windowHeight + renderParameters.yOffset, 40 * renderParameters.xScale, 40 * renderParameters.yScale);
 
