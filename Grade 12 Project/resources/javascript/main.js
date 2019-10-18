@@ -2251,11 +2251,13 @@ var pauseScreen = {
 	textFunction: {
 
 		1: function() {renderParameters.pause = false;},
+		1: function() {renderParameters.pause = false;},
 		2: function() {renderParameters.pause = false;},
-		3: function() {renderParameters.pause = false;},
-		4: function() {renderParameters.pause = false;}
+		3: function() {renderParameters.pause = false;}
 
 	},
+
+	textHighlight: [],
 
 	bannerWidth: 960,
 
@@ -2278,16 +2280,35 @@ var pauseScreen = {
 
 			}
 
+
+			pauseScreen.textHighlight = [];
+
 			for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
 
 				if (
 
 					cursorParameters.x * 2 > renderParameters.windowWidth - (pauseScreen.textBoxWidth * 0.5 * renderParameters.xScale) &&
-					cursorParameters.x * 2 < renderParameters.windowWidth + (pauseScreen.textBoxWidth * 0.5 * renderParameters.xScale)
+					cursorParameters.x * 2 < renderParameters.windowWidth + (pauseScreen.textBoxWidth * 0.5 * renderParameters.xScale) &&
 
+					cursorParameters.y * 2 > (renderParameters.windowHeight + ((pauseScreen.textMargin + pauseScreen.fontSize) * (i - (pauseScreen.textContent.length / 2))) + pauseScreen.textMargin / 2) * renderParameters.yScale &&
+					cursorParameters.y * 2 < (renderParameters.windowHeight + ((pauseScreen.textMargin + pauseScreen.fontSize) * (i - (pauseScreen.textContent.length / 2) + 1)) + pauseScreen.textMargin / 2) * renderParameters.yScale
 
 				) {
-					console.log(i);
+					pauseScreen.textHighlight.push(true);
+
+					if (cursorParameters.mouseDown1 === true) {
+
+						if (i == 0) {
+							renderParameters.pause = false;
+						}
+
+
+					}
+
+
+
+				} else {
+					pauseScreen.textHighlight.push(false);
 				}
 
 			}
@@ -2337,13 +2358,20 @@ var pauseScreen = {
 		ctx.font = String(pauseScreen.fontSize * renderParameters.xScale + 'px pixelText');
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#FFFFFF';
 
 		for (var i = 0; i < pauseScreen.textContent.length; i = i + 1) {
+
+			if (pauseScreen.textHighlight[i] === true) {
+				ctx.fillStyle = '#FF00FF';
+			} else {
+				ctx.fillStyle = '#FFFFFF';
+			}
 
 			ctx.fillText(String(pauseScreen.textContent[i]), renderParameters.windowWidth, (renderParameters.windowHeight + ((pauseScreen.textMargin + pauseScreen.fontSize) * (i - (pauseScreen.textContent.length / 2))) + pauseScreen.textMargin) * renderParameters.yScale);
 
 		}
+
+		ctx.fillStyle = '#FFFFFF';
 
 		//Version
 		ctx.fillText('Decend - Version: pre-1.0', renderParameters.windowWidth, renderParameters.windowHeight * 2 - pauseScreen.textMargin * 0.5);
