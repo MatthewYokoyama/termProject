@@ -1,1 +1,3 @@
-The following images must be converted into BASE64 and pasted into an image in the 'index.html' file. This is due to a CORS security feature.
+version https://git-lfs.github.com/spec/v1
+oid sha256:8d4428d3144d4a180e22e662251cd02ba3fa9cfe4d1bcb5431a18e11fbe11b10
+size 141
